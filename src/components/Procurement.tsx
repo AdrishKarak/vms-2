@@ -11,6 +11,7 @@ interface ProcurementProps {
   onAddPO: (po: PurchaseOrder) => void;
   onUpdatePOStatus: (id: string, status: PurchaseOrder['status']) => void;
   onAddContract: (c: Contract) => void;
+  initialTab?: 'pos' | 'rfqs' | 'contracts' | 'invoices';
 }
 
 export function Procurement({
@@ -21,9 +22,16 @@ export function Procurement({
   isDark,
   onAddPO,
   onUpdatePOStatus,
-  onAddContract
+  onAddContract,
+  initialTab
 }: ProcurementProps) {
-  const [tab, setTab] = useState<'pos' | 'rfqs' | 'contracts' | 'invoices'>('pos');
+  const [tab, setTab] = useState<'pos' | 'rfqs' | 'contracts' | 'invoices'>(initialTab || 'pos');
+
+  React.useEffect(() => {
+    if (initialTab) {
+      setTab(initialTab);
+    }
+  }, [initialTab]);
 
   // Interactive Subtab lists
   const [poFilter, setPoFilter] = useState<string>('All');

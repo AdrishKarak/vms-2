@@ -30,7 +30,7 @@ export const SavingsTracker: React.FC<SavingsTrackerProps> = ({
 
   // New Saving Form State
   const [newTitle, setNewTitle] = useState('');
-  const [newSavingType, setNewSavingType] = useState('Negotiation');
+  const [newSavingType, setNewSavingType] = useState<SavingsInitiative['savingType']>('Negotiation');
   const [newCategory, setNewCategory] = useState('IT Services');
   const [newVendorId, setNewVendorId] = useState('');
   const [newBaseline, setNewBaseline] = useState(100000);
@@ -90,10 +90,11 @@ export const SavingsTracker: React.FC<SavingsTrackerProps> = ({
       category: newCategory,
       vendorId: newVendorId,
       vendorName: selectedVendor?.name || 'Sovereign Solutions Ltd',
-      contractRef: `CTR-${Math.floor(Math.random() * 200) + 1000}`,
       savingType: newSavingType,
       baseline: newBaseline,
       negotiated: newNegotiated,
+      baselineCost: newBaseline,
+      negotiatedCost: newNegotiated,
       savingAmount: computedSavingsVal,
       savingPercent: computedSavingsPercent,
       status: newStatus,

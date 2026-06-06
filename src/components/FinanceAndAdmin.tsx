@@ -11,6 +11,7 @@ interface FinanceAndAdminProps {
   isDark: boolean;
   onInviteUser: (u: User) => void;
   onDeleteUser: (email: string) => void;
+  initialTab?: 'payments' | 'spend' | 'users' | 'savings' | 'logs';
 }
 
 export function FinanceAndAdmin({
@@ -20,9 +21,16 @@ export function FinanceAndAdmin({
   users,
   isDark,
   onInviteUser,
-  onDeleteUser
+  onDeleteUser,
+  initialTab
 }: FinanceAndAdminProps) {
-  const [tab, setTab] = useState<'payments' | 'spend' | 'users' | 'savings' | 'logs'>('spend');
+  const [tab, setTab] = useState<'payments' | 'spend' | 'users' | 'savings' | 'logs'>(initialTab || 'spend');
+
+  React.useEffect(() => {
+    if (initialTab) {
+      setTab(initialTab);
+    }
+  }, [initialTab]);
 
   // Payments status states
   const [authorizedPayments, setAuthorizedPayments] = useState<string[]>([]);
@@ -411,7 +419,7 @@ export function FinanceAndAdmin({
                         ))}
                       </div>
                     ) : (
-                      log.details
+                      null
                     )}
                   </td>
                   <td className="p-3 text-right font-mono text-slate-400">{log.timestamp}</td>

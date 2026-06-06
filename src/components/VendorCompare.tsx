@@ -281,7 +281,7 @@ export const VendorCompare: React.FC<VendorCompareProps> = ({
               {/* Rows */}
               <div className="grid grid-cols-5 border-b border-gray-100 dark:border-gray-850 p-4 text-xs items-center">
                 <div className="font-medium text-gray-600 dark:text-gray-400 flex items-center gap-1">
-                  Overall Score <HelpCircle size={10} className="opacity-50" title="Comprehensive composite performance marker index" />
+                  Overall Score <span title="Comprehensive composite performance marker index"><HelpCircle size={10} className="opacity-50" /></span>
                 </div>
                 {comparedVendors.map(v => {
                   const isWinner = winnersMap.performanceScore.bestId === v.id;

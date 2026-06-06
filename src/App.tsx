@@ -8,7 +8,7 @@ import {
   LayoutDashboard, Building2, UserPlus, BarChart3, Star, ShoppingCart, 
   FileSearch, FileText, Receipt, ShieldAlert, FolderLock, ClipboardList, 
   Wallet, TrendingUp, Users, Settings, Bell, Search, Moon, Sun, 
-  Plus, X, ArrowUpRight, ArrowDownRight, Calendar as LucideCalendar, 
+  Plus, X, Clock, ArrowUpRight, ArrowDownRight, Calendar as LucideCalendar, 
   PiggyBank, Leaf, ChevronLeft, ChevronRight, Minimize2, Check, 
   AlertTriangle, Eye, Edit2, Trash2, Info, RefreshCw, Send, 
   CheckSquare, Download, Filter, Columns, GripVertical, HelpCircle, 
@@ -18,7 +18,7 @@ import {
 import { 
   generateInitialMockData, generateSeedData, Vendor, PurchaseOrder, Contract, Invoice, 
   RiskAssessment, ESGScorecard as ESGScorecardType, CalendarEvent, 
-  SavingsInitiative, AuditLog, User 
+  SavingsInitiative, AuditLog, User, ComplianceDoc 
 } from './dataStore';
 
 // Subcomponents
@@ -26,6 +26,13 @@ import { CalendarView } from './components/CalendarView';
 import { VendorCompare } from './components/VendorCompare';
 import { ESGScorecard } from './components/ESGScorecard';
 import { SavingsTracker } from './components/SavingsTracker';
+import { Onboarding } from './components/Onboarding';
+import { Performance } from './components/Performance';
+import { Procurement } from './components/Procurement';
+import { FinanceAndAdmin } from './components/FinanceAndAdmin';
+import { RiskAssessmentView } from './components/RiskAssessmentView';
+import { ComplianceDocsView } from './components/ComplianceDocsView';
+import { AuditLogsView } from './components/AuditLogsView';
 
 const MONTHLY_SPEND_DATA = [
   { month: 'Jul 25', Spend: 280000 },
@@ -50,11 +57,52 @@ const CATEGORY_SPEND_SERIES = [
   { name: 'Facilities', value: 240000, fill: '#14B8A6' }
 ];
 
-// Recharts
+const DASHBOARD_RADAR_DATA = [
+  { subject: 'ESG Score', A: 78, B: 85, fullMark: 100 },
+  { subject: 'Delivery Rate', A: 92, B: 88, fullMark: 100 },
+  { subject: 'Risk Index', A: 45, B: 35, fullMark: 100 },
+  { subject: 'Invoice Accuracy', A: 85, B: 90, fullMark: 100 },
+  { subject: 'Cost Savings', A: 70, B: 82, fullMark: 100 },
+  { subject: 'Quality SLA', A: 90, B: 84, fullMark: 100 },
+];
+
 import { 
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, 
-  Tooltip, BarChart, Bar, PieChart, Pie, Cell, Legend
+  Tooltip, BarChart, Bar, PieChart, Pie, Cell, Legend,
+  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar
 } from 'recharts';
+
+function CountUp({ end, duration = 1500, prefix = '', suffix = '', decimals = 0 }: { end: number; duration?: number; prefix?: string; suffix?: string; decimals?: number }) {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    const startTime = performance.now();
+    const startValue = 0;
+
+    let frameId: number;
+
+    const updateCount = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      const easeProgress = progress * (2 - progress);
+      
+      const currentValue = startValue + easeProgress * (end - startValue);
+      setCount(currentValue);
+
+      if (progress < 1) {
+        frameId = requestAnimationFrame(updateCount);
+      } else {
+        setCount(end);
+      }
+    };
+
+    frameId = requestAnimationFrame(updateCount);
+    return () => cancelAnimationFrame(frameId);
+  }, [end, duration]);
+
+  return <span>{prefix}{count.toFixed(decimals)}{suffix}</span>;
+}
 
 export default function App() {
   // Master state synchronized across views
@@ -109,7 +157,7 @@ export default function App() {
   const [onboardStep, setOnboardStep] = useState(1);
   const [onboardSuccessState, setOnboardSuccessState] = useState(false);
   const [onboardCompany, setOnboardCompany] = useState('');
-  const [onboardCategory, setOnboardCategory] = useState('IT Services');
+  const [onboardCategory, setOnboardCategory] = useState<Vendor['category']>('IT Services');
   const [onboardTier, setOnboardTier] = useState<'Tier 1' | 'Tier 2' | 'Tier 3'>('Tier 2');
   const [onboardCountry, setOnboardCountry] = useState('United States');
   const [onboardCity, setOnboardCity] = useState('');
@@ -185,21 +233,38 @@ export default function App() {
     addToast('Calendar event created successfully', 'success');
   };
 
-  const handleUpdateVendorESG = (vendorId: string, overallScore: number, details: Vendor['esgDetails']) => {
+  const handleUpdateVendorESG = (vendorId: string, updatedScorecard: ESGScorecardType) => {
     setDb(prev => {
       const updatedVendors = prev.vendors.map(v => {
         if (v.id === vendorId) {
           return {
             ...v,
-            esgScore: overallScore,
-            esgDetails: details
+            esgScore: updatedScorecard.overallScore,
+            esgDetails: {
+              environmental: updatedScorecard.eScore,
+              social: updatedScorecard.sScore,
+              governance: updatedScorecard.gScore
+            }
           };
         }
         return v;
       });
+      
+      const updatedScorecards = prev.esgScorecards.map(sc => {
+        if (sc.vendorId === vendorId) {
+          return updatedScorecard;
+        }
+        return sc;
+      });
+      
+      if (!updatedScorecards.some(sc => sc.vendorId === vendorId)) {
+        updatedScorecards.push(updatedScorecard);
+      }
+      
       return {
         ...prev,
         vendors: updatedVendors,
+        esgScorecards: updatedScorecards,
         auditLogs: [{
           id: `LOG-${Date.now()}`,
           timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
@@ -209,7 +274,7 @@ export default function App() {
           module: 'Risk',
           action: 'Update',
           entityId: vendorId,
-          description: `Logged upgraded ESG scorecard parameters for ${vendorId}.`,
+          description: `Logged upgraded ESG scorecard parameters for ${updatedScorecard.vendorName}.`,
           status: 'Success'
         }, ...prev.auditLogs]
       };
@@ -428,6 +493,221 @@ export default function App() {
     addToast(`Resolved dispute raised for Invoice ${invId}`, 'info');
   };
 
+  const handleAddVendor = (v: Vendor) => {
+    setDb(prev => ({
+      ...prev,
+      vendors: [v, ...prev.vendors],
+      auditLogs: [{
+        id: `LOG-${Date.now()}`,
+        timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
+        user: 'Alex Mercer',
+        role: 'Procurement Manager',
+        ipAddress: '192.168.1.1',
+        module: 'Vendors',
+        action: 'Create',
+        entityId: v.id,
+        description: `Successfully onboarded new vendor: ${v.name}.`,
+        status: 'Success'
+      }, ...prev.auditLogs]
+    }));
+    addToast(`Onboarded vendor ${v.name}`, 'success');
+  };
+
+  const handleAddPOObj = (po: PurchaseOrder) => {
+    setDb(prev => ({
+      ...prev,
+      pos: [po, ...prev.pos],
+      auditLogs: [{
+        id: `LOG-${Date.now()}`,
+        timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
+        user: 'Alex Mercer',
+        role: 'Procurement Manager',
+        ipAddress: '192.168.1.2',
+        module: 'POs',
+        action: 'Create',
+        entityId: po.id,
+        description: `Drafted PO ${po.id} with value $${po.poValue.toLocaleString()}.`,
+        status: 'Success'
+      }, ...prev.auditLogs]
+    }));
+    addToast(`Purchase Order ${po.id} created`, 'success');
+  };
+
+  const handleUpdatePOStatus = (id: string, status: PurchaseOrder['status']) => {
+    setDb(prev => {
+      const updated = prev.pos.map(po => {
+        if (po.id === id) return { ...po, status };
+        return po;
+      });
+      return {
+        ...prev,
+        pos: updated,
+        auditLogs: [{
+          id: `LOG-${Date.now()}`,
+          timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
+          user: 'Alex Mercer',
+          role: 'Procurement Manager',
+          ipAddress: '192.168.1.42',
+          module: 'POs',
+          action: status === 'Approved' ? 'Approve' : 'Update',
+          entityId: id,
+          description: `Updated status of PO ${id} to ${status}.`,
+          status: 'Success'
+        }, ...prev.auditLogs]
+      };
+    });
+    addToast(`Purchase Order ${id} status updated to ${status}`, 'success');
+  };
+
+  const handleAddContract = (c: Contract) => {
+    setDb(prev => ({
+      ...prev,
+      contracts: [c, ...prev.contracts],
+      auditLogs: [{
+        id: `LOG-${Date.now()}`,
+        timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
+        user: 'Alex Mercer',
+        role: 'Procurement Manager',
+        ipAddress: '192.168.1.3',
+        module: 'Contracts',
+        action: 'Create',
+        entityId: c.id,
+        description: `Created new contract ${c.id} for ${c.vendorName} worth $${c.value.toLocaleString()}.`,
+        status: 'Success'
+      }, ...prev.auditLogs]
+    }));
+    addToast(`Contract ${c.id} added successfully`, 'success');
+  };
+
+  const handleInviteUser = (u: User) => {
+    setDb(prev => ({
+      ...prev,
+      users: [u, ...prev.users],
+      auditLogs: [{
+        id: `LOG-${Date.now()}`,
+        timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
+        user: 'Alex Mercer',
+        role: 'Procurement Manager',
+        ipAddress: '192.168.1.4',
+        module: 'Users',
+        action: 'Create',
+        entityId: u.id,
+        description: `Invited user ${u.name} (${u.email}) as ${u.role}.`,
+        status: 'Success'
+      }, ...prev.auditLogs]
+    }));
+    addToast(`Invited user ${u.name} successfully`, 'success');
+  };
+
+  const handleDeleteUser = (email: string) => {
+    setDb(prev => {
+      const targetUser = prev.users.find(u => u.email === email);
+      return {
+        ...prev,
+        users: prev.users.filter(u => u.email !== email),
+        auditLogs: [{
+          id: `LOG-${Date.now()}`,
+          timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
+          user: 'Alex Mercer',
+          role: 'Procurement Manager',
+          ipAddress: '192.168.1.4',
+          module: 'Users',
+          action: 'Delete',
+          entityId: targetUser?.id || email,
+          description: `Deleted/revoked access for user ${targetUser?.name || email}.`,
+          status: 'Success'
+        }, ...prev.auditLogs]
+      };
+    });
+    addToast(`Deleted user account`, 'info');
+  };
+
+  const handleAddRiskAssessment = (ra: RiskAssessment) => {
+    setDb(prev => {
+      const updatedVendors = prev.vendors.map(v => {
+        if (v.id === ra.vendorId) {
+          return {
+            ...v,
+            riskScore: ra.overallScore,
+            riskDetails: {
+              financial: Math.round(ra.overallScore * 0.9),
+              operational: Math.round(ra.overallScore * 0.8),
+              compliance: Math.round(ra.overallScore * 0.75),
+              cyber: Math.round(ra.overallScore * 1.1),
+              geopolitical: Math.round(ra.overallScore * 0.7)
+            }
+          };
+        }
+        return v;
+      });
+
+      return {
+        ...prev,
+        vendors: updatedVendors,
+        riskAssessments: [ra, ...prev.riskAssessments],
+        auditLogs: [{
+          id: `LOG-${Date.now()}`,
+          timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
+          user: 'Alex Mercer',
+          role: 'Procurement Manager',
+          ipAddress: '192.168.1.18',
+          module: 'Risk',
+          action: 'Create',
+          entityId: ra.vendorId,
+          description: `Created risk assessment audit score for vendor: ${ra.vendorName}. Overall calculated risk score: ${ra.overallScore}/100.`,
+          status: 'Success'
+        }, ...prev.auditLogs]
+      };
+    });
+    addToast(`Risk assessment for ${ra.vendorName} created.`, 'success');
+  };
+
+  const handleAddComplianceDoc = (doc: ComplianceDoc) => {
+    setDb(prev => ({
+      ...prev,
+      complianceDocs: [doc, ...prev.complianceDocs],
+      auditLogs: [{
+        id: `LOG-${Date.now()}`,
+        timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
+        user: 'Alex Mercer',
+        role: 'Procurement Manager',
+        ipAddress: '192.168.1.18',
+        module: 'System',
+        action: 'Create',
+        entityId: doc.id,
+        description: `Registered compliance certificate: ${doc.name} under Category: ${doc.category}.`,
+        status: 'Success'
+      }, ...prev.auditLogs]
+    }));
+  };
+
+  const handleFlagComplianceDoc = (id: string) => {
+    setDb(prev => {
+      const updatedDocs = prev.complianceDocs.map(d => {
+        if (d.id === id) {
+          return { ...d, notes: `${d.notes ? d.notes + ' ' : ''}[FLAGGED] Document marked for audit discrepancy review.` };
+        }
+        return d;
+      });
+      return {
+        ...prev,
+        complianceDocs: updatedDocs,
+        auditLogs: [{
+          id: `LOG-${Date.now()}`,
+          timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
+          user: 'Alex Mercer',
+          role: 'Procurement Manager',
+          ipAddress: '192.168.1.18',
+          module: 'System',
+          action: 'Update',
+          entityId: id,
+          description: `Discrepancy flag raised on document ID ${id}. Routed to legal review queues.`,
+          status: 'Success'
+        }, ...prev.auditLogs]
+      };
+    });
+  };
+
   const handleBulkStatusChange = (status: Vendor['status']) => {
     if (selectedVendors.length === 0) return;
     setDb(prev => {
@@ -549,16 +829,69 @@ export default function App() {
     }
   ];
 
+  // Category distribution for dashboard pie chart
+  const categoryDistribution = useMemo(() => {
+    const dist: Record<string, number> = {};
+    db.vendors.forEach(v => {
+      dist[v.category] = (dist[v.category] || 0) + 1;
+    });
+    const colors = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6', '#EF4444', '#06B6D4', '#84CC16', '#A855F7'];
+    return Object.keys(dist).map((cat, idx) => ({
+      name: cat,
+      value: dist[cat],
+      fill: colors[idx % colors.length]
+    }));
+  }, [db.vendors]);
+
+  // Heatmap Data (last 140 days) for GitHub contribution chart
+  const heatmapData = useMemo(() => {
+    const data: { dateStr: string; count: number; dayOfWeek: number }[] = [];
+    const endDate = new Date('2026-06-06');
+    
+    // Group logs by date
+    const logCounts: Record<string, number> = {};
+    db.auditLogs.forEach(log => {
+      const datePart = log.timestamp.split(' ')[0];
+      logCounts[datePart] = (logCounts[datePart] || 0) + 1;
+    });
+
+    for (let i = 139; i >= 0; i--) {
+      const d = new Date(endDate);
+      d.setDate(endDate.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      
+      let count = logCounts[dateStr] || 0;
+      
+      // Seed realistic, deterministic contribution patterns for past empty dates
+      if (count === 0) {
+        const hash = (d.getFullYear() * 7 + d.getMonth() * 13 + d.getDate() * 31) % 100;
+        if (hash > 45) { // 55% active days
+          if (hash > 88) count = 8;     // High
+          else if (hash > 70) count = 5; // Medium-High
+          else if (hash > 55) count = 3; // Medium
+          else count = 1;                // Low
+        }
+      }
+
+      data.push({
+        dateStr,
+        count,
+        dayOfWeek: d.getDay()
+      });
+    }
+    return data;
+  }, [db.auditLogs]);
+
   // Active vendor record memo
   const activeVendorRecord = useMemo(() => {
     return db.vendors.find(v => v.id === activeVendorId) || null;
   }, [activeVendorId, db.vendors]);
 
   return (
-    <div className={`flex h-screen bg-[#F4F5F7] dark:bg-[#0D1117] text-[#111827] dark:text-[#F1F5F9] font-sans overflow-hidden transition-colors duration-200`}>
+    <div className={`flex h-screen bg-[#F4F5F7] dark:bg-[#0D1117] p-6 gap-6 text-[#111827] dark:text-[#F1F5F9] font-sans overflow-hidden transition-colors duration-200`}>
       
       {/* SIDEBAR */}
-      <aside className="w-64 bg-[#0F1729] dark:bg-[#090E1A] border-r border-[#1E293B] flex flex-col shrink-0">
+      <aside className="w-64 bg-[#0F1729] dark:bg-[#090E1A] border-r border-[#1E293B] flex flex-col shrink-0 rounded-[8px]">
         
         {/* Sidebar Logo */}
         <div className="p-6 border-b border-[#1E293B]">
@@ -608,19 +941,19 @@ export default function App() {
         </nav>
 
         {/* Sidebar Footer User detail */}
-        <div className="p-4 border-t border-[#1E293B] bg-[#0A0F1D]/80 flex items-center justify-between">
+        <div className="p-4 border-t border-gray-200 dark:border-gray-800 bg-transparent flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center font-extrabold text-white text-xs">
-              AM
+               AM
             </div>
             <div>
-              <h4 className="text-xs font-bold text-white">Alex Mercer</h4>
-              <p className="text-[10px] text-gray-400">HQ Admin Authority</p>
+              <h4 className="text-xs font-bold text-gray-800 dark:text-white">Alex Mercer</h4>
+              <p className="text-[10px] text-gray-500 dark:text-gray-400">HQ Admin Authority</p>
             </div>
           </div>
           <button 
             onClick={() => addToast('Authorized secure lockout triggered', 'info')}
-            className="text-gray-400 hover:text-white transition p-1"
+            className="text-gray-500 hover:text-gray-800 dark:text-gray-450 dark:hover:text-white transition p-1"
           >
             <X size={14} className="opacity-70 rotate-45" />
           </button>
@@ -629,10 +962,10 @@ export default function App() {
       </aside>
 
       {/* MAIN CONTAINER */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden gap-6">
         
         {/* TOP BAR */}
-        <header className="h-16 border-b border-gray-250 dark:border-gray-800 bg-white dark:bg-[#111827] flex items-center justify-between px-8 shrink-0">
+        <header className="h-16 border-b border-gray-250 dark:border-gray-800 bg-white dark:bg-[#111827] flex items-center justify-between px-8 shrink-0 rounded-[8px]">
           
           <div className="flex items-center gap-4">
             <h1 className="font-roboto font-extrabold text-[#111827] dark:text-white text-base uppercase tracking-wider">
@@ -774,23 +1107,31 @@ export default function App() {
                       <div className="grid grid-cols-4 gap-6">
                         <div className="bg-white dark:bg-[#161B27] p-5 rounded border border-gray-200 dark:border-gray-800">
                           <span className="block text-[10px] text-gray-400 uppercase font-bold text-slate-500">Total spend metrics</span>
-                          <span className="text-xl font-roboto font-black text-gray-800 dark:text-white mt-1">${(activeVendorRecord.totalSpend / 1000).toFixed(0)}K</span>
+                          <span className="text-xl font-roboto font-black text-gray-800 dark:text-white mt-1">
+                            {activeVendorRecord.totalSpend ? `$${(activeVendorRecord.totalSpend / 1000).toFixed(0)}K` : '$0K'}
+                          </span>
                         </div>
                         <div className="bg-white dark:bg-[#161B27] p-5 rounded border border-gray-200 dark:border-gray-800">
                           <span className="block text-[10px] text-gray-400 uppercase font-bold text-slate-500">Active Contracts limit</span>
-                          <span className="text-xl font-roboto font-black text-gray-800 dark:text-white mt-1">{activeVendorRecord.activeContracts} SLA Agreements</span>
+                          <span className="text-xl font-roboto font-black text-gray-800 dark:text-white mt-1">
+                            {activeVendorRecord.activeContracts ?? 0} SLA Agreements
+                          </span>
                         </div>
                         <div className="bg-white dark:bg-[#161B27] p-5 rounded border border-gray-200 dark:border-gray-800">
                           <span className="block text-[10px] text-gray-400 uppercase font-bold text-slate-500">Defect metrics index</span>
-                          <span className="text-xl font-roboto font-black text-[#EF4444] mt-1">{activeVendorRecord.performanceMetrics.defectRate}%</span>
+                          <span className="text-xl font-roboto font-black text-[#EF4444] mt-1">
+                            {activeVendorRecord.performanceMetrics?.defectRate !== undefined ? `${activeVendorRecord.performanceMetrics.defectRate}%` : 'N/A'}
+                          </span>
                         </div>
                         <div className="bg-white dark:bg-[#161B27] p-5 rounded border border-gray-200 dark:border-gray-800">
                           <span className="block text-[10px] text-gray-400 uppercase font-bold text-slate-500">On-Time delivery rate</span>
-                          <span className="text-xl font-roboto font-black text-[#10B981] mt-1">{activeVendorRecord.performanceMetrics.onTimeDelivery}%</span>
+                          <span className="text-xl font-roboto font-black text-[#10B981] mt-1">
+                            {activeVendorRecord.performanceMetrics?.onTimeDelivery !== undefined ? `${activeVendorRecord.performanceMetrics.onTimeDelivery}%` : 'N/A'}
+                          </span>
                         </div>
                       </div>
 
-                      <div className="bg-white dark:bg-[#161B27] p-6 rounded-lg border border-gray-200 dark:border-gray-850">
+                      <div className="bg-white dark:bg-[#161B27] p-6 rounded-lg border border-gray-200 dark:border-gray-855">
                         <h4 className="font-roboto font-extrabold text-xs uppercase tracking-widest text-[#111827] dark:text-white mb-3">Enterprise description</h4>
                         <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed font-sans">
                           Operating as a tier partner client within {activeVendorRecord.category} delivery groups since {activeVendorRecord.onboardedDate}. Authorized by procurement officer {activeVendorRecord.onboardedBy}, this entity undergoes monthly evaluations and periodic compliance reviews.
@@ -807,7 +1148,7 @@ export default function App() {
                       </h4>
                       <div className="h-68">
                         <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={activeVendorRecord.performanceHistory}>
+                          <AreaChart data={activeVendorRecord.performanceHistory || []}>
                             <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
                             <XAxis dataKey="month" />
                             <YAxis domain={[50, 100]} />
@@ -885,7 +1226,7 @@ export default function App() {
                           <div key={inv.id} className="p-4 flex justify-between items-center">
                             <div>
                               <p className="font-bold text-gray-800 dark:text-gray-100">{inv.id}</p>
-                              <span className="text-[10px] text-gray-400">PO Ref: {inv.poReference}</span>
+                              <span className="text-[10px] text-gray-400">PO Ref: {inv.poRef}</span>
                             </div>
                             <div className="flex gap-4 items-center">
                               <span className="font-semibold text-gray-600">${inv.total.toLocaleString()}</span>
@@ -909,34 +1250,74 @@ export default function App() {
                   
                   {/* KPI ROW */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                    <div className="bg-white dark:bg-[#161B27] p-6 rounded-lg border border-gray-250 dark:border-gray-800 shadow-sm">
-                      <span className="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase">Composite Registry</span>
-                      <h3 className="text-3xl font-roboto font-extrabold text-[#111827] dark:text-white mt-1">248 Vendors</h3>
-                      <p className="text-[10px] text-green-500 font-bold mt-2">↑ 12 active this period</p>
+                    {/* Card 1 — Total Vendors */}
+                    <div className="bg-neo-base shadow-neo-card hover:shadow-neo-card-hover rounded-[14px] p-[18px] relative transition-shadow duration-200">
+                      <div className="absolute top-[18px] right-[20px] w-9 h-9 flex items-center justify-center bg-neo-base shadow-neo-icon-btn rounded-[8px] text-neo-accent">
+                        <Building2 size={18} />
+                      </div>
+                      <span className="block text-[10px] font-bold text-neo-muted uppercase tracking-wider">Total Vendors</span>
+                      <h3 className="text-3xl font-roboto font-extrabold text-neo-primary mt-1">
+                        <CountUp end={248} />
+                      </h3>
+                      <p className="text-[11px] text-neo-success font-bold mt-2 flex items-center gap-1">
+                        <span>↑</span> 12 this month
+                      </p>
                     </div>
 
-                    <div className="bg-white dark:bg-[#161B27] p-6 rounded-lg border border-gray-250 dark:border-gray-800 shadow-sm">
-                      <span className="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase">Active SLAs</span>
-                      <h3 className="text-3xl font-roboto font-extrabold text-[#111827] dark:text-white mt-1">134 Contracts</h3>
-                      <p className="text-[10px] text-amber-500 font-bold mt-2">↑ 8 renegotiated</p>
+                    {/* Card 2 — Active Contracts */}
+                    <div className="bg-neo-base shadow-neo-card hover:shadow-neo-card-hover rounded-[14px] p-[18px] relative transition-shadow duration-200">
+                      <div className="absolute top-[18px] right-[20px] w-9 h-9 flex items-center justify-center bg-neo-base shadow-neo-icon-btn rounded-[8px] text-neo-accent">
+                        <FileText size={18} />
+                      </div>
+                      <span className="block text-[10px] font-bold text-neo-muted uppercase tracking-wider">Active Contracts</span>
+                      <h3 className="text-3xl font-roboto font-extrabold text-neo-primary mt-1">
+                        <CountUp end={134} />
+                      </h3>
+                      <p className="text-[11px] text-neo-warning font-bold mt-2 flex items-center gap-1">
+                        <span>↑</span> 8 renewed
+                      </p>
                     </div>
 
-                    <div className="bg-white dark:bg-[#161B27] p-6 rounded-lg border border-gray-250 dark:border-gray-800 shadow-sm">
-                      <span className="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase">Pending Audits</span>
-                      <h3 className="text-3xl font-roboto font-extrabold text-[#111827] dark:text-white mt-1">27 Stage Files</h3>
-                      <p className="text-[10px] text-red-500 font-bold mt-2">↓ 4 approvals ongoing</p>
+                    {/* Card 3 — Pending Approvals */}
+                    <div className="bg-neo-base shadow-neo-card hover:shadow-neo-card-hover rounded-[14px] p-[18px] relative transition-shadow duration-200">
+                      <div className="absolute top-[18px] right-[20px] w-9 h-9 flex items-center justify-center bg-neo-base shadow-neo-icon-btn rounded-[8px] text-neo-accent">
+                        <Clock size={18} />
+                      </div>
+                      <span className="block text-[10px] font-bold text-neo-muted uppercase tracking-wider">Pending Approvals</span>
+                      <h3 className="text-3xl font-roboto font-extrabold text-neo-primary mt-1">
+                        <CountUp end={27} />
+                      </h3>
+                      <p className="text-[11px] text-neo-danger font-bold mt-2 flex items-center gap-1">
+                        <span>↓</span> 4 from last week
+                      </p>
                     </div>
 
-                    <div className="bg-white dark:bg-[#161B27] p-6 rounded-lg border border-gray-250 dark:border-gray-800 shadow-sm">
-                      <span className="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase">Procurement Spend YTD</span>
-                      <h3 className="text-3xl font-roboto font-extrabold text-[#111827] dark:text-white mt-1">$4.2M</h3>
-                      <p className="text-[10px] text-green-500 font-bold mt-2">↑ 6.4% strategic threshold</p>
+                    {/* Card 4 — Spend This Month */}
+                    <div className="bg-neo-base shadow-neo-card hover:shadow-neo-card-hover rounded-[14px] p-[18px] relative transition-shadow duration-200">
+                      <div className="absolute top-[18px] right-[20px] w-9 h-9 flex items-center justify-center bg-neo-base shadow-neo-icon-btn rounded-[8px] text-neo-accent">
+                        <DollarSign size={18} />
+                      </div>
+                      <span className="block text-[10px] font-bold text-neo-muted uppercase tracking-wider">Spend This Month</span>
+                      <h3 className="text-3xl font-roboto font-extrabold text-neo-primary mt-1">
+                        <CountUp end={4.2} decimals={1} prefix="$" suffix="M" />
+                      </h3>
+                      <p className="text-[11px] text-neo-success font-bold mt-2 flex items-center gap-1">
+                        <span>↑</span> 6.4% vs last month
+                      </p>
                     </div>
 
-                    <div className="bg-white dark:bg-[#161B27] p-6 rounded-lg border border-gray-250 dark:border-gray-800 shadow-sm">
-                      <span className="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase">Risk Incidents</span>
-                      <h3 className="text-3xl font-roboto font-extrabold text-red-650 mt-1">11 Issues</h3>
-                      <p className="text-[10px] text-gray-400 mt-2">3 critical assessment flags</p>
+                    {/* Card 5 — Open Risk Issues */}
+                    <div className="bg-neo-base shadow-neo-card hover:shadow-neo-card-hover rounded-[14px] p-[18px] relative transition-shadow duration-200">
+                      <div className="absolute top-[18px] right-[20px] w-9 h-9 flex items-center justify-center bg-neo-base shadow-neo-icon-btn rounded-[8px] text-neo-accent">
+                        <ShieldAlert size={18} />
+                      </div>
+                      <span className="block text-[10px] font-bold text-neo-muted uppercase tracking-wider">Open Risk Issues</span>
+                      <h3 className="text-3xl font-roboto font-extrabold text-neo-primary mt-1">
+                        <CountUp end={11} />
+                      </h3>
+                      <p className="text-[11px] text-neo-danger font-bold mt-2 flex items-center gap-1">
+                        3 critical, 8 medium
+                      </p>
                     </div>
                   </div>
 
@@ -965,8 +1346,111 @@ export default function App() {
                     {/* Donut distribution chart */}
                     <div className="lg:col-span-2 bg-white dark:bg-[#161B27] p-6 rounded-lg border border-gray-250 dark:border-gray-800 shadow-sm">
                       <h4 className="font-roboto font-bold text-sm tracking-tight mb-4">System Registry Distribution</h4>
-                      <div className="h-68 flex items-center justify-center">
-                        <p className="text-xs text-gray-400 italic">Continuous distribution alignment is verified monthly.</p>
+                      <div className="h-68">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={categoryDistribution.slice(0, 5)}
+                              cx="50%"
+                              cy="50%"
+                              innerRadius={60}
+                              outerRadius={80}
+                              paddingAngle={5}
+                              dataKey="value"
+                            >
+                              {categoryDistribution.slice(0, 5).map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.fill} />
+                              ))}
+                            </Pie>
+                            <Tooltip formatter={(value) => [`${value} Vendors`, 'Count']} />
+                            <Legend layout="horizontal" verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: '10px' }} />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                  </div>
+
+                  {/* Dynamic Metrics: Radar (Web) Chart and Activity Heatmap */}
+                  <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                    {/* Radar (Web) Chart */}
+                    <div className="lg:col-span-2 bg-white dark:bg-[#161B27] p-6 rounded-lg border border-gray-250 dark:border-gray-800 shadow-sm">
+                      <div className="flex justify-between items-center mb-4 border-b border-gray-150 dark:border-gray-800 pb-2">
+                        <h4 className="font-roboto font-bold text-sm tracking-tight text-neo-primary">Strategic Category Balance</h4>
+                        <span className="text-[10px] bg-neo-base shadow-neo-badge text-neo-muted px-2 py-0.5 rounded font-black">Radar Evaluation</span>
+                      </div>
+                      <div className="h-68">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <RadarChart cx="50%" cy="50%" outerRadius="75%" data={DASHBOARD_RADAR_DATA}>
+                            <PolarGrid stroke={theme === 'dark' ? '#2A3041' : '#B8BEC7'} />
+                            <PolarAngleAxis dataKey="subject" stroke={theme === 'dark' ? '#8A9BB0' : '#3D5068'} fontSize={10} fontWeight="bold" />
+                            <PolarRadiusAxis angle={30} domain={[0, 100]} stroke={theme === 'dark' ? '#4A5570' : '#8A9BB0'} fontSize={8} />
+                            <Radar name="Current Year" dataKey="A" stroke="var(--text-accent)" fill="var(--text-accent)" fillOpacity={0.4} />
+                            <Radar name="Benchmark" dataKey="B" stroke="#10B981" fill="#10B981" fillOpacity={0.25} />
+                            <Legend fontSize={10} wrapperStyle={{ paddingTop: '10px' }} />
+                            <Tooltip />
+                          </RadarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                    {/* GitHub-like Contribution Heatmap */}
+                    <div className="lg:col-span-3 bg-white dark:bg-[#161B27] p-6 rounded-lg border border-gray-250 dark:border-gray-800 shadow-sm flex flex-col justify-between">
+                      <div className="flex justify-between items-center mb-4 border-b border-gray-150 dark:border-gray-800 pb-2">
+                        <h4 className="font-roboto font-bold text-sm tracking-tight text-neo-primary">Continuous Integration Activity Logs</h4>
+                        <span className="text-[10px] bg-neo-base shadow-neo-badge text-neo-muted px-2 py-0.5 rounded font-black">20-Week Rolling</span>
+                      </div>
+                      
+                      <div className="flex-1 flex flex-col justify-center space-y-4">
+                        <div className="flex items-start gap-4">
+                          {/* Weekday labels */}
+                          <div className="grid grid-rows-7 gap-2 text-[9px] font-black text-neo-muted uppercase pt-1 shrink-0">
+                            <span>Sun</span>
+                            <span>Mon</span>
+                            <span>Tue</span>
+                            <span>Wed</span>
+                            <span>Thu</span>
+                            <span>Fri</span>
+                            <span>Sat</span>
+                          </div>
+                          
+                          {/* Heatmap Grid */}
+                          <div className="flex-1 overflow-x-auto">
+                            <div className="grid grid-flow-col grid-rows-7 gap-2 pb-2 min-w-[380px]">
+                              {heatmapData.map((day, idx) => {
+                                let bgClass = 'bg-neo-base shadow-neo-input';
+                                if (day.count > 0) {
+                                  if (day.count <= 2) bgClass = 'bg-neo-accent/20 shadow-neo-badge border border-neo-accent/30';
+                                  else if (day.count <= 4) bgClass = 'bg-neo-accent/40 shadow-neo-badge border border-neo-accent/50';
+                                  else if (day.count <= 6) bgClass = 'bg-neo-accent/70 shadow-neo-badge text-neo-on-accent';
+                                  else bgClass = 'bg-neo-accent shadow-neo-badge text-neo-on-accent';
+                                }
+                                
+                                return (
+                                  <div 
+                                    key={idx}
+                                    className={`w-3.5 h-3.5 rounded-[3px] transition-all duration-150 hover:scale-125 cursor-pointer ${bgClass}`}
+                                    title={`${day.dateStr}: ${day.count} database operations`}
+                                  />
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Legends */}
+                        <div className="flex justify-between items-center text-[10px] font-bold text-neo-muted border-t border-gray-200 dark:border-gray-800/60 pt-4">
+                          <span>Operations count from dynamically loaded logs</span>
+                          <div className="flex items-center gap-1.5 font-sans">
+                            <span>Less</span>
+                            <div className="w-3.5 h-3.5 rounded-[3px] bg-neo-base shadow-neo-input" />
+                            <div className="w-3.5 h-3.5 rounded-[3px] bg-neo-accent/20 shadow-neo-badge" />
+                            <div className="w-3.5 h-3.5 rounded-[3px] bg-neo-accent/40 shadow-neo-badge" />
+                            <div className="w-3.5 h-3.5 rounded-[3px] bg-neo-accent/70 shadow-neo-badge" />
+                            <div className="w-3.5 h-3.5 rounded-[3px] bg-neo-accent shadow-neo-badge" />
+                            <span>More</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
@@ -1173,13 +1657,194 @@ export default function App() {
               {activePage === 'esg' && (
                 <ESGScorecard 
                   vendors={db.vendors}
+                  esgScorecards={db.esgScorecards}
                   onUpdateVendorESG={handleUpdateVendorESG}
                   dark={theme === 'dark'}
                 />
               )}
 
+              {/* ROUTE: VENDOR ONBOARDING */}
+              {activePage === 'onboarding' && (
+                <Onboarding
+                  vendors={db.vendors}
+                  isDark={theme === 'dark'}
+                  onAddVendor={handleAddVendor}
+                />
+              )}
+
+              {/* ROUTE: PERFORMANCE */}
+              {activePage === 'performance' && (
+                <Performance
+                  vendors={db.vendors}
+                  scorecards={db.esgScorecards}
+                  isDark={theme === 'dark'}
+                  onUpdateScorecard={(sc) => handleUpdateVendorESG(sc.vendorId, sc)}
+                  onNavigateToDetail={(vendorId) => {
+                    setActivePage('vendors');
+                    setActiveVendorId(vendorId);
+                  }}
+                />
+              )}
+
+              {/* ROUTE: PROCUREMENT (PO, RFQ, CONTRACTS, INVOICES) */}
+              {['pos', 'rfq', 'contracts', 'invoices'].includes(activePage) && (
+                <Procurement
+                  vendors={db.vendors}
+                  purchaseOrders={db.pos}
+                  contracts={db.contracts}
+                  invoices={db.invoices}
+                  isDark={theme === 'dark'}
+                  onAddPO={handleAddPOObj}
+                  onUpdatePOStatus={handleUpdatePOStatus}
+                  onAddContract={handleAddContract}
+                  initialTab={activePage === 'rfq' ? 'rfqs' : activePage as any}
+                />
+              )}
+
+              {/* ROUTE: FINANCE & ADMIN (PAYMENTS, SPEND, USERS) */}
+              {['payments', 'analytics', 'users'].includes(activePage) && (
+                <FinanceAndAdmin
+                  vendors={db.vendors}
+                  savings={db.savings}
+                  logs={db.auditLogs}
+                  users={db.users}
+                  isDark={theme === 'dark'}
+                  onInviteUser={handleInviteUser}
+                  onDeleteUser={handleDeleteUser}
+                  initialTab={activePage === 'analytics' ? 'spend' : activePage as any}
+                />
+              )}
+
+              {/* ROUTE: RISK ASSESSMENT */}
+              {activePage === 'risk' && (
+                <RiskAssessmentView 
+                  vendors={db.vendors}
+                  riskAssessments={db.riskAssessments}
+                  isDark={theme === 'dark'}
+                  onNavigateToDetail={(id) => {
+                    setActivePage('vendors');
+                    setActiveVendorId(id);
+                  }}
+                  onAddRiskAssessment={handleAddRiskAssessment}
+                />
+              )}
+
+              {/* ROUTE: COMPLIANCE DOCUMENTS */}
+              {activePage === 'compliance' && (
+                <ComplianceDocsView
+                  vendors={db.vendors}
+                  documents={db.complianceDocs}
+                  isDark={theme === 'dark'}
+                  onAddDocument={handleAddComplianceDoc}
+                  onFlagDocument={handleFlagComplianceDoc}
+                />
+              )}
+
+              {/* ROUTE: AUDIT LOGS */}
+              {activePage === 'audit' && (
+                <AuditLogsView
+                  logs={db.auditLogs}
+                  isDark={theme === 'dark'}
+                />
+              )}
+
+              {/* ROUTE: SYSTEM SETTINGS */}
+              {activePage === 'settings' && (
+                <div className="flex-1 p-8 overflow-y-auto space-y-6">
+                  <div>
+                    <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest font-roboto">System Settings & Configuration</span>
+                    <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white uppercase font-roboto">Global Configurations</h1>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* General Settings */}
+                    <div className="bg-neo-base shadow-neo-card rounded-[16px] p-6 space-y-4">
+                      <h3 className="text-sm font-bold uppercase tracking-wider text-neo-primary border-b border-gray-300 dark:border-gray-800 pb-2">General Settings</h3>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-xs font-semibold text-neo-secondary mb-1">Company Name</label>
+                          <input type="text" className="w-full bg-neo-base shadow-neo-input border-0 rounded-[12px] h-[38px] px-3 text-xs text-neo-primary focus:shadow-neo-input-focus outline-none" defaultValue="VendorFlow Corp." />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-neo-secondary mb-1">Fiscal Year Start</label>
+                          <select className="w-full bg-neo-base shadow-neo-input border-0 rounded-[12px] h-[38px] px-3 text-xs text-neo-primary focus:shadow-neo-input-focus outline-none">
+                            <option>January 1st</option>
+                            <option>April 1st</option>
+                            <option>July 1st</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-neo-secondary mb-1">Default Currency</label>
+                          <select className="w-full bg-neo-base shadow-neo-input border-0 rounded-[12px] h-[38px] px-3 text-xs text-neo-primary focus:shadow-neo-input-focus outline-none">
+                            <option>USD ($)</option>
+                            <option>EUR (€)</option>
+                            <option>GBP (£)</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Security & Access */}
+                    <div className="bg-neo-base shadow-neo-card rounded-[16px] p-6 space-y-4">
+                      <h3 className="text-sm font-bold uppercase tracking-wider text-neo-primary border-b border-gray-300 dark:border-gray-800 pb-2">Security & Access</h3>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs font-bold text-neo-primary">Enforce Two-Factor Authentication (2FA)</p>
+                            <p className="text-[10px] text-neo-muted">Require all administrator and manager accounts to use 2FA.</p>
+                          </div>
+                          <div className="w-10 h-6 bg-neo-base shadow-neo-input rounded-full p-1 cursor-pointer flex items-center justify-start">
+                            <div className="w-4 h-4 rounded-full bg-neo-accent shadow-neo-btn"></div>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs font-bold text-neo-primary">Single Sign-On (SSO)</p>
+                            <p className="text-[10px] text-neo-muted">Enable SAML 2.0 or Okta identity provider authentication.</p>
+                          </div>
+                          <div className="w-10 h-6 bg-neo-base shadow-neo-input rounded-full p-1 cursor-pointer flex items-center justify-end">
+                            <div className="w-4 h-4 rounded-full bg-neo-accent shadow-neo-btn"></div>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-neo-secondary mb-1">IP Allowlist Range</label>
+                          <input type="text" className="w-full bg-neo-base shadow-neo-input border-0 rounded-[12px] h-[38px] px-3 text-xs text-neo-primary focus:shadow-neo-input-focus outline-none" defaultValue="192.168.1.1/24, 10.0.0.1/16" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Integrations */}
+                    <div className="bg-neo-base shadow-neo-card rounded-[16px] p-6 space-y-4 md:col-span-2">
+                      <h3 className="text-sm font-bold uppercase tracking-wider text-neo-primary border-b border-gray-300 dark:border-gray-800 pb-2">ERP & Workflow Integrations</h3>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {[
+                          { name: 'SAP Integration', status: 'Connected', desc: 'Sync POs & Invoices' },
+                          { name: 'Oracle ERP', status: 'Disconnected', desc: 'Sync vendor registries' },
+                          { name: 'QuickBooks Online', status: 'Connected', desc: 'Sync ledger details' },
+                          { name: 'DocuSign', status: 'Connected', desc: 'E-sign contracts' }
+                        ].map((erp, idx) => (
+                          <div key={idx} className="bg-neo-base shadow-neo-card p-4 rounded-[14px] flex flex-col justify-between h-32">
+                            <div>
+                              <p className="text-xs font-bold text-neo-primary">{erp.name}</p>
+                              <p className="text-[10px] text-neo-muted mt-1">{erp.desc}</p>
+                            </div>
+                            <div className="flex items-center justify-between mt-4">
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded shadow-neo-badge ${erp.status === 'Connected' ? 'text-neo-success' : 'text-neo-muted'}`}>{erp.status}</span>
+                              <button className="bg-neo-base shadow-neo-btn hover:shadow-neo-btn-hover active:shadow-neo-btn-active text-[10px] font-bold text-neo-accent px-2 py-1 rounded-[8px]">
+                                {erp.status === 'Connected' ? 'Disconnect' : 'Connect'}
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              )}
+
               {/* Fallback Screen (Renders clean informational dashboard cards if matches pages) */}
-              {!['dashboard', 'calendar', 'vendors', 'compare', 'savings', 'esg'].includes(activePage) && (
+              {!['dashboard', 'calendar', 'vendors', 'compare', 'savings', 'esg', 'onboarding', 'performance', 'pos', 'rfq', 'contracts', 'invoices', 'payments', 'analytics', 'users', 'audit', 'settings', 'compliance', 'risk'].includes(activePage) && (
                 <div className="flex-1 p-8 overflow-y-auto space-y-6">
                   
                   <div className="bg-white dark:bg-[#161B27] p-8 rounded border border-gray-200 dark:border-gray-800 text-center shadow-sm">
@@ -1205,32 +1870,6 @@ export default function App() {
                       </button>
                     </div>
                   </div>
-
-                  {/* Audit Diff Drawer display element (Simulation only if Page is Audit Logs) */}
-                  {activePage === 'audit' && (
-                    <div className="bg-white dark:bg-[#161B27] rounded-lg border border-gray-200 p-6">
-                      <h3 className="font-bold text-xs uppercase tracking-widest text-slate-450 mb-4 flex items-center gap-2">
-                        <ClipboardList size={14} /> Chronological Audit Diff Inspection Drawer
-                      </h3>
-                      
-                      <div className="divide-y divide-gray-150 text-xs font-sans">
-                        {db.auditLogs.slice(0, 10).map((log) => (
-                          <div 
-                            key={log.id} 
-                            onClick={() => setSelectedAuditLog(log)}
-                            className="py-3 flex justify-between items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-[#1E2333]/50 p-2 rounded transition"
-                          >
-                            <div>
-                              <span className="font-bold">{log.id} • {log.user} ({log.role})</span>
-                              <p className="text-gray-400 text-[10px] mt-0.5">{log.timestamp} • IP: {log.ipAddress}</p>
-                              <p className="text-gray-500 mt-1">{log.description}</p>
-                            </div>
-                            <span className="text-blue-600 font-bold">Open JSON Diff →</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
 
                 </div>
               )}
@@ -1490,7 +2129,7 @@ export default function App() {
                         <label className="block text-gray-500 font-bold mb-1">Vendor Category Specialty</label>
                         <select 
                           value={onboardCategory}
-                          onChange={(e) => setOnboardCategory(e.target.value)}
+                          onChange={(e) => setOnboardCategory(e.target.value as Vendor['category'])}
                           className="w-full bg-transparent border border-gray-300 dark:border-gray-700 rounded px-2 py-1.5 outline-none"
                         >
                           <option>IT Services</option>

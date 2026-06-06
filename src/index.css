@@ -1,35 +1,610 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Roboto:wght@700;900&display=swap');
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  /* LIGHT THEME */
+  --neo-base: #e0e5ec;
+  --neo-shadow-dark: #b8bec7;
+  --neo-shadow-light: #ffffff;
+  
+  --text-primary: #3d5068;
+  --text-secondary: #6a7f96;
+  --text-muted: #8a9bb0;
+  --text-accent: #c17a3a;
+  --text-on-accent: #ffffff;
+  
+  --color-success: #3a7a5a;
+  --color-success-bg: #e0e5ec;
+  --color-danger: #a33a3a;
+  --color-danger-bg: #e0e5ec;
+  --color-warning: #9a6a2a;
+  --color-warning-bg: #e0e5ec;
+  --color-info: #4a7a9a;
+
+  /* SHADOWS LIGHT */
+  --shadow-card-resting: 6px 6px 14px #b8bec7, -6px -6px 14px #ffffff;
+  --shadow-card-hover: 8px 8px 18px #b0b6be, -8px -8px 18px #ffffff;
+  --shadow-card-active: inset 4px 4px 9px #b8bec7, inset -4px -4px 9px #ffffff;
+  
+  --shadow-sidebar: 6px 6px 14px #b8bec7, -6px -6px 14px #ffffff;
+  --shadow-sidebar-item-hover: inset 2px 2px 5px #c8cdd4, inset -2px -2px 5px #f8fafc;
+  --shadow-sidebar-item-active: inset 3px 3px 7px #b8bec7, inset -3px -3px 7px #ffffff;
+  
+  --shadow-topbar: 4px 4px 10px #b8bec7, -4px -4px 10px #ffffff;
+  
+  --shadow-button-resting: 4px 4px 8px #b8bec7, -4px -4px 8px #ffffff;
+  --shadow-button-hover: 2px 2px 5px #b8bec7, -2px -2px 5px #ffffff;
+  --shadow-button-active: inset 3px 3px 7px #b8bec7, inset -3px -3px 7px #ffffff;
+  
+  --shadow-input-resting: inset 3px 3px 7px #b8bec7, inset -3px -3px 7px #ffffff;
+  --shadow-input-focus: inset 4px 4px 9px #b0b6be, inset -4px -4px 9px #ffffff;
+  
+  --shadow-icon-btn-resting: 3px 3px 7px #b8bec7, -3px -3px 7px #ffffff;
+  --shadow-icon-btn-hover: inset 2px 2px 5px #b8bec7, inset -2px -2px 5px #ffffff;
+  --shadow-icon-btn-active: inset 3px 3px 6px #b8bec7, inset -3px -3px 6px #ffffff;
+  
+  --shadow-badge: inset 2px 2px 4px #b8bec7, inset -2px -2px 4px #ffffff;
+  --shadow-chart: 6px 6px 14px #b8bec7, -6px -6px 14px #ffffff;
+  --shadow-table: 6px 6px 14px #b8bec7, -6px -6px 14px #ffffff;
+  --shadow-modal: 10px 10px 24px #b0b6be, -10px -10px 24px #ffffff;
+  --shadow-dropdown: 8px 8px 16px #b8bec7, -8px -8px 16px #ffffff;
+  --shadow-tooltip: 4px 4px 10px #b8bec7, -4px -4px 10px #ffffff;
+  
+  --shadow-toggle-track-off: inset 3px 3px 6px #b8bec7, inset -3px -3px 6px #ffffff;
+  --shadow-toggle-track-on: inset 3px 3px 6px #a07030, inset -3px -3px 6px #d89050;
+  --shadow-toggle-thumb: 2px 2px 5px #b8bec7, -2px -2px 5px #ffffff;
+  
+  --shadow-tab-inactive: 3px 3px 6px #b8bec7, -3px -3px 6px #ffffff;
+  --shadow-tab-active: inset 3px 3px 7px #b8bec7, inset -3px -3px 7px #ffffff;
+  
+  --shadow-avatar: 3px 3px 7px #b8bec7, -3px -3px 7px #ffffff;
+  --shadow-scrollbar-thumb: 2px 2px 4px #b8bec7, -2px -2px 4px #ffffff;
+  --shadow-notif-dot: 2px 2px 4px #b8bec7, -1px -1px 3px #ffffff;
+  --bg-notif-dot: #c17a3a;
+  
+  --color-success-bg-badge: #e0e5ec;
+  --color-danger-bg-badge: #e0e5ec;
+  --color-warning-bg-badge: #e0e5ec;
+}
+
+html.dark {
+  /* DARK THEME */
+  --neo-base: #1e2330;
+  --neo-shadow-dark: #12161f;
+  --neo-shadow-light: #2a3041;
+  
+  --text-primary: #c8d0e0;
+  --text-secondary: #8a9bb0;
+  --text-muted: #4a5570;
+  --text-accent: #e8a060;
+  --text-on-accent: #1e2330;
+  
+  --color-success: #5ac890;
+  --color-success-bg: #1e2330;
+  --color-danger: #e06060;
+  --color-danger-bg: #1e2330;
+  --color-warning: #e8b060;
+  --color-warning-bg: #1e2330;
+  --color-info: var(--text-secondary);
+
+  /* SHADOWS DARK */
+  --shadow-card-resting: 5px 5px 12px #12161f, -5px -5px 12px #2a3041;
+  --shadow-card-hover: 7px 7px 16px #0e1118, -7px -7px 16px #2e3648;
+  --shadow-card-active: inset 4px 4px 9px #12161f, inset -4px -4px 9px #2a3041;
+  
+  --shadow-sidebar: 5px 5px 12px #12161f, -5px -5px 12px #2a3041;
+  --shadow-sidebar-item-hover: inset 2px 2px 5px #161a25, inset -2px -2px 5px #262c3b;
+  --shadow-sidebar-item-active: inset 3px 3px 7px #12161f, inset -3px -3px 7px #2a3041;
+  
+  --shadow-topbar: 4px 4px 10px #12161f, -4px -4px 10px #2a3041;
+  
+  --shadow-button-resting: 4px 4px 8px #12161f, -4px -4px 8px #2a3041;
+  --shadow-button-hover: 2px 2px 5px #12161f, -2px -2px 5px #2a3041;
+  --shadow-button-active: inset 3px 3px 7px #12161f, inset -3px -3px 7px #2a3041;
+  
+  --shadow-input-resting: inset 3px 3px 7px #12161f, inset -3px -3px 7px #2a3041;
+  --shadow-input-focus: inset 4px 4px 9px #0e1118, inset -4px -4px 9px #2e3648;
+  
+  --shadow-icon-btn-resting: 3px 3px 7px #12161f, -3px -3px 7px #2a3041;
+  --shadow-icon-btn-hover: inset 2px 2px 5px #12161f, inset -2px -2px 5px #2a3041;
+  --shadow-icon-btn-active: inset 3px 3px 6px #12161f, inset -3px -3px 6px #2a3041;
+  
+  --shadow-badge: inset 2px 2px 4px #12161f, inset -2px -2px 4px #2a3041;
+  --shadow-chart: 5px 5px 12px #12161f, -5px -5px 12px #2a3041;
+  --shadow-table: 5px 5px 12px #12161f, -5px -5px 12px #2a3041;
+  --shadow-modal: 10px 10px 24px #0e1118, -10px -10px 24px #2e3648;
+  --shadow-dropdown: 8px 8px 16px #12161f, -8px -8px 16px #2a3041;
+  --shadow-tooltip: 4px 4px 10px #12161f, -4px -4px 10px #2a3041;
+  
+  --shadow-toggle-track-off: inset 3px 3px 6px #12161f, inset -3px -3px 6px #2a3041;
+  --shadow-toggle-track-on: inset 3px 3px 6px #c07030, inset -3px -3px 6px #f0b070;
+  --shadow-toggle-thumb: 2px 2px 5px #12161f, -2px -2px 5px #2a3041;
+  
+  --shadow-tab-inactive: 3px 3px 6px #12161f, -3px -3px 6px #2a3041;
+  --shadow-tab-active: inset 3px 3px 7px #12161f, inset -3px -3px 7px #2a3041;
+  
+  --shadow-avatar: 3px 3px 7px #12161f, -3px -3px 7px #2a3041;
+  --shadow-scrollbar-thumb: 2px 2px 4px #12161f, -2px -2px 4px #2a3041;
+  --shadow-notif-dot: 2px 2px 4px #12161f, -1px -1px 3px #2a3041;
+  --bg-notif-dot: #e8a060;
+  
+  --color-success-bg-badge: #1e2330;
+  --color-danger-bg-badge: #1e2330;
+  --color-warning-bg-badge: #1e2330;
+}
+
+@theme {
+  --color-neo-base: var(--neo-base);
+  --color-neo-primary: var(--text-primary);
+  --color-neo-secondary: var(--text-secondary);
+  --color-neo-muted: var(--text-muted);
+  --color-neo-accent: var(--text-accent);
+  --color-neo-on-accent: var(--text-on-accent);
+  
+  --color-neo-success: var(--color-success);
+  --color-neo-danger: var(--color-danger);
+  --color-neo-warning: var(--color-warning);
+  --color-neo-info: var(--color-info);
+  
+  --shadow-neo-card: var(--shadow-card-resting);
+  --shadow-neo-card-hover: var(--shadow-card-hover);
+  --shadow-neo-card-active: var(--shadow-card-active);
+  --shadow-neo-sidebar: var(--shadow-sidebar);
+  --shadow-neo-sidebar-item-hover: var(--shadow-sidebar-item-hover);
+  --shadow-neo-sidebar-item-active: var(--shadow-sidebar-item-active);
+  --shadow-neo-topbar: var(--shadow-topbar);
+  --shadow-neo-btn: var(--shadow-button-resting);
+  --shadow-neo-btn-hover: var(--shadow-button-hover);
+  --shadow-neo-btn-active: var(--shadow-button-active);
+  --shadow-neo-input: var(--shadow-input-resting);
+  --shadow-neo-input-focus: var(--shadow-input-focus);
+  --shadow-neo-icon-btn: var(--shadow-icon-btn-resting);
+  --shadow-neo-icon-btn-hover: var(--shadow-icon-btn-hover);
+  --shadow-neo-icon-btn-active: var(--shadow-icon-btn-active);
+  --shadow-neo-badge: var(--shadow-badge);
+  --shadow-neo-chart: var(--shadow-chart);
+  --shadow-neo-table: var(--shadow-table);
+  --shadow-neo-modal: var(--shadow-modal);
+  --shadow-neo-dropdown: var(--shadow-dropdown);
+  --shadow-neo-tooltip: var(--shadow-tooltip);
+  --shadow-neo-tab-inactive: var(--shadow-tab-inactive);
+  --shadow-neo-tab-active: var(--shadow-tab-active);
+  --shadow-neo-avatar: var(--shadow-avatar);
+
+  /* Font size scale overrides: scaled up for bigger letters */
+  --font-size-xs: 0.85rem;
+  --font-size-sm: 1.0rem;
+  --font-size-base: 1.15rem;
+  --font-size-lg: 1.35rem;
+  --font-size-xl: 1.55rem;
+  --font-size-2xl: 1.85rem;
+  --font-size-3xl: 2.3rem;
+  --font-size-4xl: 2.8rem;
+  --font-size-5xl: 3.5rem;
+
+  /* Font weight scale overrides: scaled up for bolder letters */
+  --font-weight-normal: 500;
+  --font-weight-medium: 600;
+  --font-weight-semibold: 700;
+  --font-weight-bold: 800;
+  --font-weight-extrabold: 900;
+  --font-weight-black: 950;
+
+  /* Spacing overrides: scaled up by ~40% for larger gaps, paddings, and margins */
+  --spacing-1: 0.35rem;
+  --spacing-2: 0.7rem;
+  --spacing-3: 1.05rem;
+  --spacing-4: 1.4rem;
+  --spacing-5: 1.75rem;
+  --spacing-6: 2.1rem;
+  --spacing-7: 2.45rem;
+  --spacing-8: 2.8rem;
+  --spacing-9: 3.15rem;
+  --spacing-10: 3.5rem;
+  --spacing-11: 3.85rem;
+  --spacing-12: 4.2rem;
+  --spacing-16: 5.6rem;
+  --spacing-20: 7.0rem;
+  --spacing-24: 8.4rem;
+  --spacing-32: 11.2rem;
+}
+
 @layer base {
-  body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  html, body {
+    background-color: var(--neo-base) !important;
+    color: var(--text-secondary) !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 15px; /* scaled up from 14px */
+    font-weight: 500 !important; /* default body text made bolder */
+    line-height: 1.7;
+    padding: 0;
+    margin: 0;
+    overflow-x: hidden;
+    transition: background-color 0.2s ease, color 0.15s ease;
+  }
+  
+  h1, h2, h3, h4, h5, h6, .font-roboto {
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+    color: var(--text-primary) !important;
+    font-weight: 850 !important; /* headings made extra bold */
   }
 }
 
-.font-roboto {
-  font-family: 'Roboto', sans-serif;
+/* GLOBAL NEOMORPHISM UI OVERRIDES */
+
+/* Base Page background override */
+.bg-\[\#F4F5F7\], .dark\:bg-\[\#0D1117\], .bg-slate-50, .dark\:bg-slate-900, .bg-slate-100 {
+  background-color: var(--neo-base) !important;
 }
 
-.font-serif {
-  font-family: 'Playfair Display', serif;
+/* Card surfaces */
+.bg-white, .dark\:bg-\[\#161B27\], .dark\:bg-\[\#111827\], .bg-\[\#ffffff\], .bg-\[\#FFFFFF\],
+.bg-slate-50\/50, .bg-slate-100\/50, .dark\:bg-slate-800\/20, .dark\:bg-gray-850\/15 {
+  background-color: var(--neo-base) !important;
+  box-shadow: var(--shadow-card-resting) !important;
+  border: none !important;
+  border-radius: 8px !important;
 }
 
-/* Custom thin scrollbar */
+.bg-white:hover, .dark\:bg-\[\#161B27\]:hover, .dark\:bg-\[\#111827\]:hover {
+  box-shadow: var(--shadow-card-hover) !important;
+}
+
+/* Sidebar overrides */
+aside, .w-64, .dark\:bg-\[\#090E1A\] {
+  background-color: var(--neo-base) !important;
+  box-shadow: var(--shadow-sidebar) !important;
+  border: none !important;
+  border-radius: 8px !important;
+}
+
+aside div, aside nav {
+  border-color: rgba(var(--neo-shadow-dark), 0.3) !important;
+}
+
+/* Sidebar navigation buttons */
+aside nav button {
+  background-color: var(--neo-base) !important;
+  box-shadow: none !important;
+  border-radius: 6px !important;
+  color: var(--text-secondary) !important;
+  border: none !important;
+  transition: all 0.2s ease !important;
+}
+
+aside nav button:hover {
+  box-shadow: var(--shadow-sidebar-item-hover) !important;
+  color: var(--text-primary) !important;
+}
+
+aside nav button.bg-blue-600, aside nav button.dark\:bg-blue-700, 
+aside nav button[class*="bg-blue-"], aside nav button.active {
+  box-shadow: var(--shadow-sidebar-item-active) !important;
+  color: var(--text-accent) !important;
+  background-color: var(--neo-base) !important;
+  font-weight: 600 !important;
+}
+
+aside nav button.bg-blue-600 svg, aside nav button.dark\:bg-blue-700 svg, 
+aside nav button[class*="bg-blue-"] svg, aside nav button.active svg {
+  color: var(--text-accent) !important;
+}
+
+/* Topbar header overrides */
+header, .h-16 {
+  background-color: var(--neo-base) !important;
+  box-shadow: var(--shadow-topbar) !important;
+  border: none !important;
+  border-radius: 8px !important;
+}
+
+/* Buttons overrides */
+button, .bg-blue-600, .bg-green-600, .bg-red-600, .bg-indigo-600, .bg-amber-600,
+.hover\:bg-blue-750, .hover\:bg-blue-700, .bg-blue-500, .bg-blue-600\/90 {
+  background-color: var(--neo-base) !important;
+  box-shadow: var(--shadow-button-resting) !important;
+  color: var(--text-secondary) !important;
+  border: none !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+/* Primary/Accent button color mapping */
+button.bg-blue-600, button.bg-blue-500, button.bg-green-600, button.bg-indigo-600, button.text-white,
+button[class*="bg-blue-"], button[class*="bg-green-"], button[class*="bg-indigo-"] {
+  color: var(--text-accent) !important;
+}
+
+/* Danger buttons */
+button.bg-red-600, button[class*="bg-red-"] {
+  color: var(--color-danger) !important;
+}
+
+button:hover {
+  box-shadow: var(--shadow-button-hover) !important;
+}
+
+button:active {
+  box-shadow: var(--shadow-button-active) !important;
+}
+
+/* Tab buttons overrides (Flat unrounded layout tabs) */
+.neo-tab, [role="tab"], button[class*="border-b-"], button[class*="tab"] {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  padding: 0 12px !important;
+  height: 48px !important;
+  color: var(--text-secondary) !important;
+}
+
+.neo-tab.active, [role="tab"][aria-selected="true"], button[class*="border-b-"].active, 
+button[class*="border-b-"][class*="text-blue-"], button[class*="border-b-"][class*="border-blue-"] {
+  border-bottom-color: var(--text-accent) !important;
+  color: var(--text-accent) !important;
+  font-weight: 700 !important;
+}
+
+/* Inputs, Textareas, Selects overrides */
+input[type="text"], input[type="email"], input[type="number"], input[type="date"], select, textarea {
+  background-color: var(--neo-base) !important;
+  box-shadow: var(--shadow-input-resting) !important;
+  border: none !important;
+  border-radius: 6px !important;
+  outline: none !important;
+  color: var(--text-primary) !important;
+  transition: box-shadow 0.2s ease !important;
+}
+
+input[type="text"]:focus, input[type="email"]:focus, input[type="number"]:focus, input[type="date"]:focus, select:focus, textarea:focus {
+  box-shadow: var(--shadow-input-focus) !important;
+}
+
+/* Select options custom color */
+select option {
+  background-color: var(--neo-base) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Badges / status pills */
+span[class*="bg-green-"], span[class*="bg-red-"], span[class*="bg-amber-"], span[class*="bg-blue-"], span[class*="bg-slate-"],
+span.bg-slate-50, span.bg-blue-50, span.bg-green-50, span.bg-red-50, span.bg-amber-50,
+.rounded-full.px-2, .rounded-full.px-3 {
+  background-color: var(--neo-base) !important;
+  box-shadow: var(--shadow-badge) !important;
+  border: none !important;
+  border-radius: 4px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+/* Modals overlays and boxes */
+.fixed.inset-0.bg-black\/45, .bg-black\/55, .bg-slate-900\/50, .bg-slate-900\/60 {
+  background-color: rgba(184, 190, 199, 0.6) !important;
+  backdrop-filter: none !important;
+}
+.dark .fixed.inset-0.bg-black\/45, .dark .bg-black\/55, .dark .bg-slate-900\/60 {
+  background-color: rgba(10, 12, 18, 0.75) !important;
+  backdrop-filter: none !important;
+}
+
+.fixed.inset-0 + div.bg-white, .fixed.inset-0 + div.dark\:bg-\[\#161B27\],
+[class*="modal"], [class*="dialog"], .modal-content {
+  background-color: var(--neo-base) !important;
+  box-shadow: var(--shadow-modal) !important;
+  border: none !important;
+  border-radius: 8px !important;
+}
+
+/* Tables visual formatting */
+table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+}
+
+thead tr {
+  background-color: transparent !important;
+  border-bottom: 1.5px solid rgba(184, 190, 199, 0.4) !important;
+}
+.dark thead tr {
+  border-bottom: 1.5px solid rgba(20, 25, 35, 0.4) !important;
+}
+
+tbody tr {
+  border-bottom: 1px solid rgba(184, 190, 199, 0.25) !important;
+  background-color: transparent !important;
+  transition: background-color 0.15s ease !important;
+}
+.dark tbody tr {
+  border-bottom: 1px solid rgba(20, 25, 35, 0.25) !important;
+}
+
+tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.35) !important;
+}
+.dark tbody tr:hover {
+  background-color: rgba(42, 48, 65, 0.45) !important;
+}
+
+/* Text details styling */
+h1, h2, h3, .text-gray-900, .dark\:text-white, .text-\[\#111827\] {
+  color: var(--text-primary) !important;
+}
+
+p, .text-gray-500, .text-gray-600, .text-\[\#6B7280\], .dark\:text-gray-400 {
+  color: var(--text-secondary) !important;
+}
+
+.text-gray-400, .text-slate-450, .text-\[\#9CA3AF\] {
+  color: var(--text-muted) !important;
+}
+
+/* Accent link texts */
+.text-blue-600, .text-blue-500, .text-\[\#2563EB\], .text-indigo-600 {
+  color: var(--text-accent) !important;
+}
+
+/* Semantic text colors inside status badges */
+span.text-green-700, span[class*="text-green-"], span.text-green-800 {
+  color: var(--color-success) !important;
+}
+span.text-red-700, span[class*="text-red-"], span.text-red-800 {
+  color: var(--color-danger) !important;
+}
+span.text-amber-700, span[class*="text-amber-"], span.text-amber-800 {
+  color: var(--color-warning) !important;
+}
+
+/* Avatars */
+[class*="avatar"], .w-8.h-8.rounded-full, .w-16.h-16.rounded-full {
+  background-color: var(--neo-base) !important;
+  box-shadow: var(--shadow-avatar) !important;
+  color: var(--text-accent) !important;
+  border: none !important;
+}
+
+/* Tooltips */
+[class*="tooltip"] {
+  background-color: var(--neo-base) !important;
+  box-shadow: var(--shadow-tooltip) !important;
+  border: none !important;
+  color: var(--text-primary) !important;
+}
+
+/* Scrollbar styles override */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--neo-base);
 }
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: #c8cdd4;
+  box-shadow: var(--shadow-scrollbar-thumb);
   border-radius: 3px;
 }
 .dark ::-webkit-scrollbar-thumb {
-  background: #475569;
+  background: #2e3648;
+  box-shadow: var(--shadow-scrollbar-thumb);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: var(--text-secondary);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(8px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.25s ease forwards;
+}
+
+/* Clean out all flat layout gray boxes on neomorphic panels */
+.bg-gray-50, .bg-gray-100, .bg-gray-250, .bg-gray-200, .bg-slate-50, .bg-slate-100, .bg-slate-200, .bg-slate-50\/50, .bg-slate-100\/50,
+.dark\:bg-gray-800, .dark\:bg-gray-900, .dark\:bg-slate-800, .dark\:bg-slate-900,
+.dark\:bg-\[\#1C2333\], .dark\:bg-\[\#161B27\], .dark\:bg-\[\#111827\], .dark\:bg-\[\#1C2030\]\/50,
+.dark\:bg-\[\#1E2333\]\/40, .dark\:bg-\[\#1C2035\], .bg-gray-100\/30, .bg-gray-150, .dark\:bg-gray-850\/10,
+.bg-gray-50\/50, .dark\:bg-slate-800\/20, .dark\:bg-gray-855\/10, .bg-gray-100\/50, .dark\:bg-gray-800\/20,
+.bg-gray-50\/30, .dark\:bg-\[\#1C2030\]\/50, .dark\:bg-\[\#1E2333\]\/30, .dark\:bg-\[\#1E2333\]\/50, .bg-gray-100\/10,
+.bg-\[\#F4F5F7\], .dark\:bg-\[\#0D1117\] {
+  background-color: var(--neo-base) !important;
+}
+
+/* Force clean neomorphic borders where elements need division lines */
+.border-gray-100, .border-gray-150, .border-gray-200, .border-gray-250, .border-gray-300,
+.dark\:border-gray-700, .dark\:border-gray-750, .dark\:border-gray-800, .dark\:border-gray-850,
+.border-b, .border-t, .border-l, .border-r {
+  border-color: rgba(184, 190, 199, 0.4) !important;
+}
+.dark .border-gray-100, .dark .border-gray-150, .dark .border-gray-200, .dark .border-gray-250, .dark .border-gray-300,
+.dark .dark\:border-gray-700, .dark .dark\:border-gray-750, .dark .dark\:border-gray-800, .dark .dark\:border-gray-850,
+.dark .border-b, .dark .border-t, .dark .border-l, .dark .border-r {
+  border-color: rgba(20, 25, 35, 0.45) !important;
+}
+
+/* Prevent white/light text visibility bugs on neomorphic surfaces in light mode */
+html:not(.dark) .text-white,
+html:not(.dark) .text-slate-50,
+html:not(.dark) .text-slate-100,
+html:not(.dark) .text-slate-200,
+html:not(.dark) .text-gray-50,
+html:not(.dark) .text-gray-100,
+html:not(.dark) .text-gray-200,
+html:not(.dark) .text-blue-50,
+html:not(.dark) .text-blue-100,
+html:not(.dark) .text-green-50,
+html:not(.dark) .text-green-100,
+html:not(.dark) .text-indigo-100,
+html:not(.dark) .text-indigo-50,
+html:not(.dark) .text-amber-50,
+html:not(.dark) .text-amber-100,
+html:not(.dark) .text-purple-50,
+html:not(.dark) .text-purple-100,
+html:not(.dark) .text-red-50,
+html:not(.dark) .text-red-100,
+html:not(.dark) .text-cyan-50,
+html:not(.dark) .text-cyan-100,
+html:not(.dark) .text-rose-50,
+html:not(.dark) .text-rose-100,
+html:not(.dark) [class*="text-slate-100"],
+html:not(.dark) [class*="text-gray-100"] {
+  color: var(--text-secondary) !important;
+}
+
+html:not(.dark) .font-bold.text-white, 
+html:not(.dark) .font-extrabold.text-white,
+html:not(.dark) .font-black.text-white,
+html:not(.dark) .font-bold.text-slate-100,
+html:not(.dark) .font-bold.text-gray-100 {
+  color: var(--text-primary) !important;
+}
+
+html:not(.dark) svg.text-white, 
+html:not(.dark) .text-white svg,
+html:not(.dark) svg[class*="text-slate-100"] {
+  color: var(--text-secondary) !important;
+  stroke: var(--text-secondary) !important;
+}
+
+/* Custom Calendar Neomorphic Hover Styles */
+.calendar-day-cell {
+  transition: all 0.2s ease !important;
+}
+.calendar-day-cell:hover {
+  background-color: var(--neo-base) !important;
+  box-shadow: var(--shadow-card-active) !important;
+}
+
+.calendar-heatmap-cell {
+  transition: all 0.15s ease !important;
+}
+.calendar-heatmap-cell:hover {
+  background-color: var(--neo-base) !important;
+  box-shadow: var(--shadow-icon-btn-hover) !important;
+}
+
+.calendar-agenda-item {
+  transition: all 0.2s ease !important;
+}
+.calendar-agenda-item:hover {
+  background-color: var(--neo-base) !important;
+  box-shadow: var(--shadow-card-active) !important;
 }
 

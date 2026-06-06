@@ -317,7 +317,7 @@ export interface AuditLog {
   user: string;
   role: string;
   ipAddress: string;
-  module: 'Vendors' | 'Contracts' | 'POs' | 'Invoices' | 'Risk' | 'Users' | 'System';
+  module: 'Vendors' | 'Contracts' | 'POs' | 'Invoices' | 'Risk' | 'Users' | 'System' | 'Calendar' | 'Finance' | 'Savings' | 'ESG' | 'Procurement' | 'Sourcing';
   action: 'Create' | 'Update' | 'Delete' | 'Login' | 'Export' | 'Approve';
   entityId: string;
   description: string;
@@ -493,7 +493,27 @@ export function generateSeedData() {
         environmental: eScore,
         social: sScore,
         governance: gScore
-      }
+      },
+      totalSpend: Math.floor(50000 + Math.random() * 850000),
+      activeContracts: Math.floor(1 + Math.random() * 5),
+      posCount: Math.floor(5 + Math.random() * 15),
+      invoiceCount: Math.floor(8 + Math.random() * 25),
+      paymentTerms: ["Net 30", "Net 45", "Net 60", "Net 15"][i % 4],
+      performanceMetrics: {
+        onTimeDelivery: Math.floor(75 + Math.random() * 24),
+        defectRate: Number((0.2 + Math.random() * 4).toFixed(1)),
+        responseTime: Math.floor(2 + Math.random() * 8),
+        invoiceAccuracy: Math.floor(88 + Math.random() * 11),
+        priceVariance: Number((Math.random() * 5).toFixed(1))
+      },
+      performanceHistory: [
+        { month: 'Jan', score: Math.floor(70 + Math.random() * 28) },
+        { month: 'Feb', score: Math.floor(70 + Math.random() * 28) },
+        { month: 'Mar', score: Math.floor(70 + Math.random() * 28) },
+        { month: 'Apr', score: Math.floor(70 + Math.random() * 28) },
+        { month: 'May', score: Math.floor(70 + Math.random() * 28) },
+        { month: 'Jun', score: Math.floor(70 + Math.random() * 28) }
+      ]
     });
 
     esgScorecards.push({
@@ -820,6 +840,51 @@ export function generateSeedData() {
     { id: "EV-009", title: "W9 Document Verification", type: "Onboarding Deadline", vendorId: "VND-0042", vendorName: "ClearPath IT Solutions", date: "2026-06-14", allDay: true, remindMe: "2 days before", assignTo: ["Dwight Schrute"] }
   ];
 
+  // Compliance Documents YTD
+  const complianceDocs: ComplianceDoc[] = [];
+  const docCategories = [
+    'Business Licenses', 'Insurance Certs', 'Financial Statements', 'NDAs',
+    'Regulatory Certs', 'Quality Certs', 'Tax Documents', 'ESG Reports', 'Contracts'
+  ] as const;
+
+  for (let i = 1; i <= 35; i++) {
+    const v = vendors[i % vendors.length];
+    const category = docCategories[i % docCategories.length];
+    const id = `DOC-${String(i).padStart(4, '0')}`;
+    const uploadDate = `2026-0${1 + (i % 5)}-${String(10 + (i % 18)).padStart(2, '0')}`;
+    
+    let expiryDate = '';
+    let status: 'Active' | 'Expiring' | 'Expired' = 'Active';
+    
+    if (i % 6 === 0) {
+      expiryDate = `2026-04-${String(10 + (i % 15)).padStart(2, '0')}`;
+      status = 'Expired';
+    } else if (i % 5 === 0) {
+      expiryDate = `2026-06-${String(15 + (i % 15)).padStart(2, '0')}`;
+      status = 'Expiring';
+    } else {
+      expiryDate = `2027-0${1 + (i % 9)}-${String(10 + (i % 18)).padStart(2, '0')}`;
+      status = 'Active';
+    }
+    
+    complianceDocs.push({
+      id,
+      name: `${v.name} - ${category} 2026`,
+      vendorId: v.id,
+      vendorName: v.name,
+      category,
+      uploadDate,
+      expiryDate,
+      status,
+      verifiedBy: users[i % users.length].name,
+      fileSize: `${(1.5 + (i * 0.4)).toFixed(1)} MB`,
+      referenceNumber: `REF-${2026000 + i}`,
+      issueDate: `2025-12-01`,
+      issuingAuthority: category === 'Business Licenses' ? 'State Dept of Commerce' : category === 'Insurance Certs' ? 'Alliance Mutual Insurance' : 'Internal Audit Dept',
+      notes: `Periodic document submission for compliance tracking. Verified against standard checklists.`
+    });
+  }
+
   return {
     vendors,
     purchaseOrders,
@@ -830,7 +895,8 @@ export function generateSeedData() {
     calendarEvents,
     savingsInitiatives,
     auditLogs,
-    users
+    users,
+    complianceDocs
   };
 }
 
@@ -846,12 +912,26 @@ export function generateInitialMockData() {
     calendarEvents: seed.calendarEvents,
     savings: seed.savingsInitiatives,
     auditLogs: seed.auditLogs,
-    users: seed.users
+    users: seed.users,
+    complianceDocs: seed.complianceDocs
   };
 }
 
 export interface ComplianceDoc {
   id: string;
+  name: string;
+  vendorId: string;
+  vendorName: string;
+  category: 'Business Licenses' | 'Insurance Certs' | 'Financial Statements' | 'NDAs' | 'Regulatory Certs' | 'Quality Certs' | 'Tax Documents' | 'ESG Reports' | 'Contracts';
+  uploadDate: string;
+  expiryDate: string;
+  status: 'Active' | 'Expiring' | 'Expired';
+  verifiedBy: string;
+  fileSize: string;
+  referenceNumber: string;
+  issueDate?: string;
+  issuingAuthority?: string;
+  notes?: string;
 }
 
 export interface Payment {

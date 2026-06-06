@@ -293,7 +293,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                     <div 
                       key={day.getTime()}
                       onClick={() => handleDayClick(day)}
-                      className={`min-h-[100px] border border-gray-100 dark:border-gray-850 p-2 rounded flex flex-col transition cursor-pointer hover:bg-gray-50 dark:hover:bg-[#1F2636] ${isWeekend ? 'bg-gray-50/50 dark:bg-[#0E121C]/20' : ''}`}
+                      className={`calendar-day-cell min-h-[100px] border border-gray-100 dark:border-gray-850 p-2 rounded flex flex-col cursor-pointer ${isWeekend ? 'bg-gray-50/50 dark:bg-[#0E121C]/20' : ''}`}
                     >
                       <div className="flex justify-between items-center mb-1">
                         <span className={`text-xs font-bold ${isToday ? 'bg-blue-600 text-white w-5 h-5 flex items-center justify-center rounded-full' : 'text-gray-400 dark:text-gray-500'}`}>
@@ -402,7 +402,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                             <div 
                               key={ev.id}
                               onClick={(e) => handleChipClick(e, ev)}
-                              className="align-middle group p-3 bg-gray-50 dark:bg-[#1E2333]/40 border border-gray-150 dark:border-gray-800 rounded-md hover:border-gray-300 dark:hover:border-gray-700 cursor-pointer flex items-center justify-between"
+                              className="calendar-agenda-item align-middle group p-3 bg-gray-50 dark:bg-[#1E2333]/40 border border-gray-150 dark:border-gray-800 rounded-md cursor-pointer flex items-center justify-between"
                             >
                               <div className="flex items-center gap-3">
                                 <span className={`w-2 h-2 rounded-full ${colors.dot}`}></span>
@@ -468,7 +468,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                   <span 
                     key={i} 
                     onClick={() => setCurrentDate(new Date(`2026-06-${dayNum}`))}
-                    className={`p-1 rounded cursor-pointer transition ${isToday ? 'bg-blue-600 text-white' : ''} ${hasEvents && !isToday ? 'border-b-2 border-amber-500 font-bold hover:bg-gray-100 dark:hover:bg-gray-850' : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-850'}`}
+                    className={`calendar-heatmap-cell p-1 rounded cursor-pointer ${isToday ? 'bg-blue-600 text-white' : ''} ${hasEvents && !isToday ? 'border-b-2 border-amber-500 font-bold text-gray-400' : 'text-gray-400'}`}
                   >
                     {dayNum}
                   </span>
