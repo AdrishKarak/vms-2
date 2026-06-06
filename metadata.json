@@ -1,0 +1,6 @@
+{
+  "name": "VendorFlow",
+  "description": "Enterprise Vendor Management System (VMS) with Spend Analytics, Onboarding, ESG Tracking, Risk Assessment, and proper Calendar views.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
