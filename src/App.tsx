@@ -891,17 +891,21 @@ export default function App() {
     <div className={`flex h-screen bg-[#F4F5F7] dark:bg-[#0D1117] p-6 gap-6 text-[#111827] dark:text-[#F1F5F9] font-sans overflow-hidden transition-colors duration-200`}>
       
       {/* SIDEBAR */}
-      <aside className="w-64 bg-[#0F1729] dark:bg-[#090E1A] border-r border-[#1E293B] flex flex-col shrink-0 rounded-[8px]">
+      <aside className="w-72 bg-[#0F1729] dark:bg-[#090E1A] border-r border-[#1E293B] flex flex-col shrink-0 rounded-[8px]">
         
         {/* Sidebar Logo */}
         <div className="p-6 border-b border-[#1E293B]">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded bg-blue-600 flex items-center justify-center font-bold text-white shadow-lg text-lg tracking-tighter">
-              VF
+          <div className="logo-container">
+            <div className="logo-sphere">
+              <svg className="w-5.5 h-5.5 text-blue-600 dark:text-amber-500 logo-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" className="logo-layer-1" />
+                <path d="M2 17l10 5 10-5" className="logo-layer-2" />
+                <path d="M2 12l10 5 10-5" className="logo-layer-3" />
+              </svg>
             </div>
             <div>
-              <h2 className="text-sm font-roboto font-extrabold tracking-widest text-white">VendorFlow</h2>
-              <p className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Enterprise Console</p>
+              <h2 className="logo-title">VendorFlow</h2>
+              <p className="logo-subtitle">Enterprise Console</p>
             </div>
           </div>
         </div>
@@ -1009,7 +1013,7 @@ export default function App() {
               className="p-2 bg-[#F4F5F7] dark:bg-[#1C2333] rounded border border-gray-300 dark:border-gray-750 hover:bg-gray-200 dark:hover:bg-gray-700 relative transition"
             >
               <Bell size={15} />
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500 ring-2 ring-white"></span>
+              <div className="notif-dot absolute top-1 right-1"></div>
             </button>
 
             <span className="border-r border-gray-200 dark:border-gray-800 h-6"></span>

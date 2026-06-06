@@ -46,6 +46,17 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   const [selectedDayEvents, setSelectedDayEvents] = useState<CalendarEvent[] | null>(null);
   const [activePopover, setActivePopover] = useState<{ event: CalendarEvent; x: number; y: number } | null>(null);
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+  const handleMonthChange = (mStr: string) => {
+    const m = parseInt(mStr, 10);
+    setCurrentDate(new Date(currentDate.getFullYear(), m, 1));
+  };
+
+  const handleYearChange = (yStr: string) => {
+    const y = parseInt(yStr, 10);
+    setCurrentDate(new Date(y, currentDate.getMonth(), 1));
+  };
 
   // Add Event Form State
   const [newTitle, setNewTitle] = useState('');
@@ -135,9 +146,14 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   };
 
   const handleDayClick = (date: Date) => {
+    setSelectedDate(date);
     const dayEvents = getEventsForDay(date);
     if (dayEvents.length > 0) {
       setSelectedDayEvents(dayEvents);
+    } else {
+      const dateStr = date.toISOString().split('T')[0];
+      setNewEventDate(dateStr);
+      setAddModalOpen(true);
     }
   };
 
@@ -203,9 +219,33 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           >
             <ChevronRight size={16} />
           </button>
-          <span className="font-roboto font-bold text-lg ml-2">
-            {formatMonthName(currentDate)}
-          </span>
+          <div className="flex items-center gap-2 ml-2">
+            <select
+              value={currentDate.getMonth()}
+              onChange={(e) => handleMonthChange(e.target.value)}
+              className="bg-gray-50 dark:bg-[#1C2333] border border-gray-300 dark:border-gray-700 text-sm px-2 py-1 rounded outline-none font-bold"
+            >
+              {Array.from({ length: 12 }).map((_, i) => (
+                <option key={i} value={i}>
+                  {new Date(2000, i, 1).toLocaleString('default', { month: 'long' })}
+                </option>
+              ))}
+            </select>
+            <select
+              value={currentDate.getFullYear()}
+              onChange={(e) => handleYearChange(e.target.value)}
+              className="bg-gray-50 dark:bg-[#1C2333] border border-gray-300 dark:border-gray-700 text-sm px-2 py-1 rounded outline-none font-bold"
+            >
+              {Array.from({ length: 16 }).map((_, i) => {
+                const yr = 2020 + i;
+                return (
+                  <option key={yr} value={yr}>
+                    {yr}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
         </div>
 
         {/* View Toggle */}
@@ -725,9 +765,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           <div className="bg-white dark:bg-[#161B27] border border-gray-200 dark:border-gray-800 rounded-lg shadow-2xl max-w-md w-full overflow-hidden">
             <div className="bg-gray-50 dark:bg-[#1C2333] px-6 py-4 border-b border-gray-150 dark:border-gray-800 flex justify-between items-center">
               <h3 className="font-roboto font-extrabold text-sm uppercase tracking-wider">
-                Events Checklist (June 14)
+                Events Checklist ({selectedDate ? selectedDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : ''})
               </h3>
-              <button onClick={() => setSelectedDayEvents(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+              <button onClick={() => { setSelectedDayEvents(null); setSelectedDate(null); }} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                 <X size={18} />
               </button>
             </div>
@@ -746,9 +786,25 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
               })}
             </div>
 
-            <div className="bg-gray-50 dark:bg-[#1C2333] px-6 py-3 border-t border-gray-150 dark:border-gray-800 text-right">
+            <div className="bg-gray-50 dark:bg-[#1C2333] px-6 py-3 border-t border-gray-150 dark:border-gray-800 flex justify-between items-center">
               <button 
-                onClick={() => setSelectedDayEvents(null)}
+                onClick={() => {
+                  if (selectedDate) {
+                    const dateStr = selectedDate.toISOString().split('T')[0];
+                    setNewEventDate(dateStr);
+                    setSelectedDayEvents(null);
+                    setAddModalOpen(true);
+                  }
+                }}
+                className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded"
+              >
+                Add Event
+              </button>
+              <button 
+                onClick={() => {
+                  setSelectedDayEvents(null);
+                  setSelectedDate(null);
+                }}
                 className="px-4 py-1.5 bg-gray-800 hover:bg-gray-700 text-white font-bold text-xs rounded"
               >
                 Close List

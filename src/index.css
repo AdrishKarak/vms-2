@@ -174,15 +174,15 @@ html.dark {
   --shadow-neo-avatar: var(--shadow-avatar);
 
   /* Font size scale overrides: scaled up for bigger letters */
-  --font-size-xs: 0.85rem;
-  --font-size-sm: 1.0rem;
-  --font-size-base: 1.15rem;
-  --font-size-lg: 1.35rem;
-  --font-size-xl: 1.55rem;
-  --font-size-2xl: 1.85rem;
-  --font-size-3xl: 2.3rem;
-  --font-size-4xl: 2.8rem;
-  --font-size-5xl: 3.5rem;
+  --font-size-xs: 0.8rem;
+  --font-size-sm: 0.95rem;
+  --font-size-base: 1.1rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.45rem;
+  --font-size-2xl: 1.75rem;
+  --font-size-3xl: 2.15rem;
+  --font-size-4xl: 2.6rem;
+  --font-size-5xl: 3.2rem;
 
   /* Font weight scale overrides: scaled up for bolder letters */
   --font-weight-normal: 500;
@@ -192,23 +192,23 @@ html.dark {
   --font-weight-extrabold: 900;
   --font-weight-black: 950;
 
-  /* Spacing overrides: scaled up by ~40% for larger gaps, paddings, and margins */
-  --spacing-1: 0.35rem;
-  --spacing-2: 0.7rem;
-  --spacing-3: 1.05rem;
-  --spacing-4: 1.4rem;
-  --spacing-5: 1.75rem;
-  --spacing-6: 2.1rem;
-  --spacing-7: 2.45rem;
-  --spacing-8: 2.8rem;
-  --spacing-9: 3.15rem;
-  --spacing-10: 3.5rem;
-  --spacing-11: 3.85rem;
-  --spacing-12: 4.2rem;
-  --spacing-16: 5.6rem;
-  --spacing-20: 7.0rem;
-  --spacing-24: 8.4rem;
-  --spacing-32: 11.2rem;
+  /* Spacing overrides: scaled up for larger gaps, paddings, and margins */
+  --spacing-1: 0.45rem;
+  --spacing-2: 0.9rem;
+  --spacing-3: 1.35rem;
+  --spacing-4: 1.8rem;
+  --spacing-5: 2.25rem;
+  --spacing-6: 2.7rem;
+  --spacing-7: 3.15rem;
+  --spacing-8: 3.6rem;
+  --spacing-9: 4.05rem;
+  --spacing-10: 4.5rem;
+  --spacing-11: 4.95rem;
+  --spacing-12: 5.4rem;
+  --spacing-16: 7.2rem;
+  --spacing-20: 9.0rem;
+  --spacing-24: 10.8rem;
+  --spacing-32: 14.4rem;
 }
 
 @layer base {
@@ -216,7 +216,7 @@ html.dark {
     background-color: var(--neo-base) !important;
     color: var(--text-secondary) !important;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-size: 15px; /* scaled up from 14px */
+    font-size: 15px; /* scaled up for bigger letters */
     font-weight: 500 !important; /* default body text made bolder */
     line-height: 1.7;
     padding: 0;
@@ -253,7 +253,7 @@ html.dark {
 }
 
 /* Sidebar overrides */
-aside, .w-64, .dark\:bg-\[\#090E1A\] {
+aside, .w-72, .dark\:bg-\[\#090E1A\] {
   background-color: var(--neo-base) !important;
   box-shadow: var(--shadow-sidebar) !important;
   border: none !important;
@@ -264,7 +264,11 @@ aside div, aside nav {
   border-color: rgba(var(--neo-shadow-dark), 0.3) !important;
 }
 
-/* Sidebar navigation buttons */
+/* Sidebar navigation buttons & compact spacing */
+aside nav {
+  padding: 12px 10px !important;
+}
+
 aside nav button {
   background-color: var(--neo-base) !important;
   box-shadow: none !important;
@@ -272,6 +276,30 @@ aside nav button {
   color: var(--text-secondary) !important;
   border: none !important;
   transition: all 0.2s ease !important;
+  height: 36px !important; /* compact height for buttons */
+  font-size: 0.88rem !important; /* smaller button labels */
+  font-weight: 650 !important;
+  padding: 0 10px !important;
+  margin-bottom: 4px !important;
+}
+
+aside nav button svg {
+  width: 14px !important;
+  height: 14px !important;
+}
+
+aside nav p {
+  font-size: 0.78rem !important; /* smaller group titles */
+  margin-top: 12px !important;
+  margin-bottom: 6px !important;
+}
+
+aside nav .space-y-6 > * + * {
+  margin-top: 12px !important; /* smaller gap between groups */
+}
+
+aside nav .space-y-2 > * + * {
+  margin-top: 4px !important; /* tighter buttons list gap */
 }
 
 aside nav button:hover {
@@ -310,6 +338,8 @@ button, .bg-blue-600, .bg-green-600, .bg-red-600, .bg-indigo-600, .bg-amber-600,
   border-radius: 6px !important;
   cursor: pointer !important;
   transition: all 0.15s ease !important;
+  font-size: 0.95rem !important; /* bigger button text */
+  font-weight: 700 !important; /* bolder button text */
 }
 
 /* Primary/Accent button color mapping */
@@ -337,9 +367,11 @@ button:active {
   box-shadow: none !important;
   border-radius: 0 !important;
   border: none !important;
-  border-bottom: 2px solid transparent !important;
-  padding: 0 12px !important;
-  height: 48px !important;
+  border-bottom: 3.5px solid transparent !important; /* thicker underline */
+  padding: 0 24px !important; /* increased padding for spacier tabs */
+  margin-right: 18px !important; /* more space in between tab buttons */
+  height: 56px !important; /* taller tabs */
+  font-size: 1.0rem !important; /* bigger tab text */
   color: var(--text-secondary) !important;
 }
 
@@ -347,7 +379,7 @@ button:active {
 button[class*="border-b-"][class*="text-blue-"], button[class*="border-b-"][class*="border-blue-"] {
   border-bottom-color: var(--text-accent) !important;
   color: var(--text-accent) !important;
-  font-weight: 700 !important;
+  font-weight: 750 !important; /* bolder active tab text */
 }
 
 /* Inputs, Textareas, Selects overrides */
@@ -606,5 +638,116 @@ html:not(.dark) svg[class*="text-slate-100"] {
 .calendar-agenda-item:hover {
   background-color: var(--neo-base) !important;
   box-shadow: var(--shadow-card-active) !important;
+}
+
+/* Notification dot badge overrides */
+.notif-dot {
+  background-color: var(--bg-notif-dot) !important;
+  box-shadow: var(--shadow-notif-dot) !important;
+  border-radius: 9999px !important;
+  width: 10px !important;
+  height: 10px !important;
+  border: 1.5px solid var(--neo-base) !important;
+}
+
+/* Fancy Neomorphic Animated Logo styling */
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.logo-sphere {
+  width: 42px;
+  height: 42px;
+  border-radius: 50% !important;
+  background-color: var(--neo-base);
+  box-shadow: var(--shadow-icon-btn-resting);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  overflow: visible;
+  border: none !important;
+}
+
+/* Touch and Hover States */
+.logo-container:hover .logo-sphere,
+.logo-container:active .logo-sphere {
+  box-shadow: var(--shadow-icon-btn-hover) !important;
+  transform: scale(1.04) rotate(4deg);
+}
+
+.logo-sphere:active {
+  box-shadow: var(--shadow-icon-btn-active) !important;
+  transform: scale(0.96) rotate(-2deg) !important;
+}
+
+/* SVG Animations */
+.logo-svg {
+  transition: all 0.3s ease;
+}
+
+.logo-layer-1 {
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.logo-layer-2 {
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition-delay: 0.04s;
+}
+.logo-layer-3 {
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition-delay: 0.08s;
+}
+
+.logo-container:hover .logo-layer-1 {
+  transform: translateY(-3px);
+  color: var(--text-accent) !important;
+}
+.logo-container:hover .logo-layer-2 {
+  transform: translateY(2px);
+}
+.logo-container:hover .logo-layer-3 {
+  transform: translateY(-0.5px);
+}
+
+/* Text glow and spacing transitions */
+.logo-title {
+  font-family: 'Roboto', sans-serif !important;
+  font-size: 1.15rem !important;
+  font-weight: 950 !important;
+  color: var(--text-primary) !important;
+  letter-spacing: 0.05em;
+  transition: all 0.3s ease;
+  margin: 0 !important;
+  line-height: 1.2 !important;
+}
+
+.logo-subtitle {
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  color: var(--text-muted) !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  margin: 0 !important;
+  line-height: 1.2 !important;
+}
+
+.logo-container:hover .logo-title {
+  letter-spacing: 0.08em;
+  color: var(--text-accent) !important;
+  text-shadow: 0 0 10px rgba(193, 122, 58, 0.15);
+}
+.dark .logo-container:hover .logo-title {
+  text-shadow: 0 0 10px rgba(232, 160, 96, 0.3);
+}
+
+.logo-container:hover .logo-subtitle {
+  color: var(--text-primary) !important;
+  transform: translateX(1px);
 }
 
