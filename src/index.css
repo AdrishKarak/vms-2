@@ -9,9 +9,9 @@
   --neo-shadow-dark: #b8bec7;
   --neo-shadow-light: #ffffff;
   
-  --text-primary: #3d5068;
-  --text-secondary: #6a7f96;
-  --text-muted: #8a9bb0;
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
   --text-accent: #c17a3a;
   --text-on-accent: #ffffff;
   
@@ -75,9 +75,9 @@ html.dark {
   --neo-shadow-dark: #12161f;
   --neo-shadow-light: #2a3041;
   
-  --text-primary: #c8d0e0;
-  --text-secondary: #8a9bb0;
-  --text-muted: #4a5570;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #64748b;
   --text-accent: #e8a060;
   --text-on-accent: #1e2330;
   
