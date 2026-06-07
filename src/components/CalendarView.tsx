@@ -351,10 +351,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#F4F5F7] dark:bg-[#0D1117] text-[#111827] dark:text-[#F1F5F9] relative transition-colors duration-200">
+    <div className="flex-1 overflow-y-auto w-full bg-[#F4F5F7] dark:bg-[#0D1117] text-[#111827] dark:text-[#F1F5F9] relative transition-colors duration-200">
       
       {/* Top Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-6 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111827]">
+      <div className="flex flex-wrap items-center justify-between gap-4 p-6 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111827] shrink-0">
         <div className="flex items-center gap-3">
           <button 
             onClick={handlePrev}
@@ -455,10 +455,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
         </div>
       </div>
 
-      <div className="flex-1 flex gap-4 p-6 overflow-hidden">
+      <div className="flex gap-4 p-6 shrink-0">
         
         {/* Main Calendar Body */}
-        <div className="flex-1 bg-white dark:bg-[#161B27] rounded-lg border border-gray-200 dark:border-gray-800 flex flex-col p-4 shadow-sm overflow-y-auto">
+        <div className="flex-1 bg-white dark:bg-[#161B27] rounded-lg border border-gray-200 dark:border-gray-800 flex flex-col p-4 shadow-sm">
           
           {/* Weekday Labels (Month / Week) */}
           {viewMode !== 'agenda' && (
@@ -673,7 +673,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           </div>
 
           {/* Quick Info Alerts list */}
-          <div className="p-4 bg-white dark:bg-[#161B27] rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm flex-1 flex flex-col overflow-y-auto">
+          <div className="p-4 bg-white dark:bg-[#161B27] rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col">
             <div className="flex justify-between items-center mb-3">
               <h3 className="font-roboto font-extrabold text-[#111827] dark:text-[#F1F5F9] text-xs uppercase tracking-widest">
                 Upcoming Warnings
@@ -683,7 +683,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
               </span>
             </div>
 
-            <div className="space-y-3 flex-1 overflow-y-auto">
+            <div className="space-y-3">
               {events.slice(0, 5).map(ev => {
                 const colors = EVENT_TYPE_COLORS[ev.type];
                 return (

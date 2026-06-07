@@ -174,15 +174,15 @@ html.dark {
   --shadow-neo-avatar: var(--shadow-avatar);
 
   /* Font size scale overrides: scaled up for bigger letters */
-  --font-size-xs: 0.8rem;
-  --font-size-sm: 0.95rem;
-  --font-size-base: 1.1rem;
-  --font-size-lg: 1.25rem;
-  --font-size-xl: 1.45rem;
-  --font-size-2xl: 1.75rem;
-  --font-size-3xl: 2.15rem;
-  --font-size-4xl: 2.6rem;
-  --font-size-5xl: 3.2rem;
+  --font-size-xs: 0.85rem;
+  --font-size-sm: 0.98rem;
+  --font-size-base: 1.12rem;
+  --font-size-lg: 1.28rem;
+  --font-size-xl: 1.48rem;
+  --font-size-2xl: 1.8rem;
+  --font-size-3xl: 2.2rem;
+  --font-size-4xl: 2.7rem;
+  --font-size-5xl: 3.3rem;
 
   /* Font weight scale overrides: scaled up for bolder letters */
   --font-weight-normal: 500;
@@ -193,22 +193,22 @@ html.dark {
   --font-weight-black: 950;
 
   /* Spacing overrides: scaled up for larger gaps, paddings, and margins */
-  --spacing-1: 0.45rem;
-  --spacing-2: 0.9rem;
-  --spacing-3: 1.35rem;
-  --spacing-4: 1.8rem;
-  --spacing-5: 2.25rem;
-  --spacing-6: 2.7rem;
-  --spacing-7: 3.15rem;
-  --spacing-8: 3.6rem;
-  --spacing-9: 4.05rem;
-  --spacing-10: 4.5rem;
-  --spacing-11: 4.95rem;
-  --spacing-12: 5.4rem;
-  --spacing-16: 7.2rem;
-  --spacing-20: 9.0rem;
-  --spacing-24: 10.8rem;
-  --spacing-32: 14.4rem;
+  --spacing-1: 0.5rem;
+  --spacing-2: 1.0rem;
+  --spacing-3: 1.5rem;
+  --spacing-4: 2.0rem;
+  --spacing-5: 2.5rem;
+  --spacing-6: 3.0rem;
+  --spacing-7: 3.5rem;
+  --spacing-8: 4.0rem;
+  --spacing-9: 4.5rem;
+  --spacing-10: 5.0rem;
+  --spacing-11: 5.5rem;
+  --spacing-12: 6.0rem;
+  --spacing-16: 8.0rem;
+  --spacing-20: 10.0rem;
+  --spacing-24: 12.0rem;
+  --spacing-32: 16.0rem;
 }
 
 @layer base {
@@ -216,9 +216,10 @@ html.dark {
     background-color: var(--neo-base) !important;
     color: var(--text-secondary) !important;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-size: 15px; /* scaled up for bigger letters */
+    font-size: 16px; /* scaled up for bigger letters */
     font-weight: 500 !important; /* default body text made bolder */
-    line-height: 1.7;
+    line-height: 1.75; /* increased line height for spacious text spacing */
+    letter-spacing: 0.015em; /* increased letter spacing for text-spacing */
     padding: 0;
     margin: 0;
     overflow-x: hidden;
@@ -229,6 +230,8 @@ html.dark {
     font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
     color: var(--text-primary) !important;
     font-weight: 850 !important; /* headings made extra bold */
+    letter-spacing: 0.02em; /* increased letter spacing for headings */
+    line-height: 1.4;
   }
 }
 
@@ -272,15 +275,15 @@ aside nav {
 aside nav button {
   background-color: var(--neo-base) !important;
   box-shadow: none !important;
-  border-radius: 6px !important;
+  border-radius: 8px !important;
   color: var(--text-secondary) !important;
   border: none !important;
   transition: all 0.2s ease !important;
-  height: 36px !important; /* compact height for buttons */
-  font-size: 0.88rem !important; /* smaller button labels */
+  height: 40px !important; /* increased height for buttons */
+  font-size: 0.94rem !important; /* increased font size for button labels */
   font-weight: 650 !important;
-  padding: 0 10px !important;
-  margin-bottom: 4px !important;
+  padding: 0 12px !important; /* increased padding */
+  margin-bottom: 5px !important; /* increased space */
 }
 
 aside nav button svg {
@@ -337,11 +340,12 @@ button, .bg-orange-600, .bg-green-600, .bg-red-600, .bg-indigo-600, .bg-amber-60
   box-shadow: var(--shadow-button-resting) !important;
   color: var(--text-secondary) !important;
   border: none !important;
-  border-radius: 6px !important;
+  border-radius: 8px !important;
   cursor: pointer !important;
   transition: all 0.15s ease !important;
-  font-size: 0.95rem !important; /* bigger button text */
+  font-size: 1.0rem !important; /* bigger button text */
   font-weight: 700 !important; /* bolder button text */
+  padding: 0.75rem 1.5rem !important; /* Make buttons spacious */
 }
 
 /* Primary/Accent button color mapping */
@@ -393,10 +397,12 @@ input[type="text"], input[type="email"], input[type="number"], input[type="date"
   background-color: var(--neo-base) !important;
   box-shadow: var(--shadow-input-resting) !important;
   border: none !important;
-  border-radius: 6px !important;
+  border-radius: 8px !important;
   outline: none !important;
   color: var(--text-primary) !important;
   transition: box-shadow 0.2s ease !important;
+  padding: 0.75rem 1.1rem !important; /* Make inputs spacious */
+  font-size: 1.0rem !important;
 }
 
 input[type="text"]:focus, input[type="email"]:focus, input[type="number"]:focus, input[type="date"]:focus, select:focus, textarea:focus {
@@ -461,6 +467,10 @@ tbody tr {
 }
 .dark tbody tr {
   border-bottom: 1px solid rgba(20, 25, 35, 0.25) !important;
+}
+
+th, td {
+  padding: 1.0rem 1.25rem !important; /* Make tables spacious */
 }
 
 tbody tr:hover {
@@ -761,6 +771,46 @@ html:not(.dark) svg[class*="text-slate-100"] {
 /* Branded Page Headers styling in orange */
 .flex-1 h1, .px-8 py-6 h1, h1.logo-title {
   color: var(--text-accent) !important;
+}
+
+/* Globals to make charts, cards, and sections more spacious */
+.h-68 {
+  height: 320px !important;
+}
+
+.h-64 {
+  height: 300px !important;
+}
+
+.h-56 {
+  height: 260px !important;
+}
+
+.h-\[320px\] {
+  height: 360px !important;
+}
+
+.h-\[280px\] {
+  height: 320px !important;
+}
+
+.h-\[220px\] {
+  height: 260px !important;
+}
+
+.w-\[180px\].h-\[180px\] {
+  width: 220px !important;
+  height: 220px !important;
+}
+
+.w-\[220px\].h-\[220px\] {
+  width: 260px !important;
+  height: 260px !important;
+}
+
+/* Override small button paddings to maintain their circular/icon geometry */
+button.p-1, button.p-2, button.rounded-full, button.w-8, button.h-8, button.w-10, button.h-10 {
+  padding: 6px !important;
 }
 
 
