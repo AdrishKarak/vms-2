@@ -121,6 +121,11 @@ export default function App() {
   // Notification Drawer state
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifTab, setNotifTab] = useState<'All' | 'Alerts' | 'Approvals'>('All');
+  const [notifications, setNotifications] = useState([
+    { id: '1', title: 'Critical Risk Rating Alert', message: 'Cybersecurity audit failed for VND-1014. Action requested.', type: 'Alert', read: false },
+    { id: '2', title: 'Contract SLA Due for signature', message: 'Apex Master SLA is pending executive sign-off.', type: 'Approval', read: false },
+    { id: '3', title: 'Integration sync successful', message: 'SAP synchronization completed without errors.', type: 'Info', read: false }
+  ]);
 
   // Cmd+K Spotlight Search state
   const [cmdKOpen, setCmdKOpen] = useState(false);
@@ -373,6 +378,16 @@ export default function App() {
         status: 'Success'
       }, ...prev.auditLogs]
     }));
+    setNotifications(prev => [
+      {
+        id: `NOTIF-${Date.now()}`,
+        title: 'New Vendor Onboarded',
+        message: `Successfully registered and cataloged: ${v.name} (${v.id}).`,
+        type: 'Info',
+        read: false
+      },
+      ...prev
+    ]);
     addToast(`Onboarded vendor ${v.name}`, 'success');
   };
 
@@ -760,10 +775,15 @@ export default function App() {
             {/* Notification triggers */}
             <button 
               onClick={() => setNotifOpen(prev => !prev)}
-              className="p-2 bg-[#F4F5F7] dark:bg-[#1C2333] rounded border border-gray-300 dark:border-gray-750 hover:bg-gray-200 dark:hover:bg-gray-700 relative transition"
+              className={`p-2 bg-[#F4F5F7] dark:bg-[#1C2333] rounded border ${
+                notifOpen ? 'border-orange-500' : 'border-gray-300 dark:border-gray-700'
+              } hover:bg-gray-200 dark:hover:bg-gray-700 relative transition`}
+              title="Notification Center"
             >
-              <Bell size={15} />
-              <div className="notif-dot absolute top-1 right-1"></div>
+              <Bell size={15} className={notifOpen ? 'text-orange-500' : ''} />
+              {notifications.some(n => !n.read) && (
+                <div className="notif-dot absolute top-1 right-1"></div>
+              )}
             </button>
 
             <span className="border-r border-gray-200 dark:border-gray-800 h-6"></span>
@@ -1589,41 +1609,96 @@ export default function App() {
         <div className="fixed inset-0 z-45 flex justify-end">
           <div onClick={() => setNotifOpen(false)} className="absolute inset-0 bg-black/40 backdrop-blur-xs"></div>
           <div className="w-96 bg-white dark:bg-[#161B27] h-full shadow-2xl border-l border-gray-200 dark:border-gray-800 p-6 shrink-0 relative flex flex-col justify-between animate-in slide-in-from-right duration-200">
-            <div>
-              <div className="flex justify-between items-center pb-4 border-b border-gray-150 dark:border-gray-800 mb-4">
-                <h3 className="font-roboto font-extrabold text-[#111827] dark:text-white text-sm uppercase tracking-widest">
-                  Notifications Registry
-                </h3>
-                <button onClick={() => setNotifOpen(false)} className="text-gray-400 hover:text-gray-600">
-                  <X size={18} />
-                </button>
+            <div className="flex flex-col h-full justify-between">
+              <div>
+                <div className="flex justify-between items-center pb-4 border-b border-gray-150 dark:border-gray-800 mb-4">
+                  <h3 className="font-roboto font-extrabold text-[#111827] dark:text-white text-sm uppercase tracking-widest">
+                    Notifications Registry
+                  </h3>
+                  <button onClick={() => setNotifOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <X size={18} />
+                  </button>
+                </div>
+
+                {/* Tab Select List */}
+                <div className="flex border-b border-gray-150 dark:border-gray-800 mb-4 text-xs font-roboto">
+                  {(['All', 'Alerts', 'Approvals'] as const).map(tab => {
+                    const count = tab === 'All' 
+                      ? notifications.length 
+                      : notifications.filter(n => n.type === tab).length;
+                    return (
+                      <button
+                        key={tab}
+                        onClick={() => setNotifTab(tab)}
+                        className={`flex-1 pb-2 font-bold transition text-center ${
+                          notifTab === tab 
+                            ? 'text-orange-500 border-b-2 border-orange-500' 
+                            : 'text-gray-400 hover:text-gray-650 dark:hover:text-gray-400'
+                        }`}
+                      >
+                        {tab} ({count})
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Notifications List */}
+                <div className="space-y-3 font-sans text-xs overflow-y-auto max-h-[calc(100vh-220px)] pr-1">
+                  {notifications.filter(n => notifTab === 'All' || n.type === notifTab).length === 0 ? (
+                    <div className="text-center text-gray-400 dark:text-gray-500 py-8">
+                      No notifications in this category
+                    </div>
+                  ) : (
+                    notifications
+                      .filter(n => notifTab === 'All' || n.type === notifTab)
+                      .map(n => (
+                        <div 
+                          key={n.id} 
+                          className={`p-3 rounded border-l-4 relative transition hover:bg-gray-50 dark:hover:bg-gray-800/15 ${
+                            n.read ? 'bg-gray-50/50 dark:bg-gray-900/10 border-gray-300 dark:border-gray-800' : 
+                            n.type === 'Alert' ? 'bg-red-50 dark:bg-red-950/20 border-red-500' :
+                            n.type === 'Approval' ? 'bg-orange-50 dark:bg-orange-950/20 border-orange-500' :
+                            'bg-blue-50 dark:bg-blue-950/20 border-blue-500'
+                          }`}
+                        >
+                          <button
+                            onClick={() => {
+                              setNotifications(prev => prev.filter(item => item.id !== n.id));
+                            }}
+                            className="absolute top-2.5 right-2.5 text-gray-400 hover:text-gray-650 dark:hover:text-gray-300 transition"
+                            title="Dismiss notification"
+                          >
+                            <X size={12} />
+                          </button>
+                          
+                          <div className="flex items-center gap-1.5 pr-4">
+                            <span className={`w-1.5 h-1.5 rounded-full ${n.read ? 'bg-transparent' : 'bg-orange-500 animate-pulse'}`} />
+                            <span className={`font-bold ${
+                              n.type === 'Alert' ? 'text-red-700 dark:text-red-400' :
+                              n.type === 'Approval' ? 'text-orange-700 dark:text-orange-400' :
+                              'text-blue-700 dark:text-blue-400'
+                            }`}>
+                              {n.title}
+                            </span>
+                          </div>
+                          <p className="text-gray-550 dark:text-gray-400 mt-1 pr-4 leading-normal">{n.message}</p>
+                        </div>
+                      ))
+                  )}
+                </div>
               </div>
 
-              <div className="space-y-3 font-sans text-xs">
-                <div className="p-3 bg-red-50 dark:bg-red-950/20 border-l-4 border-red-500 rounded">
-                  <span className="font-bold text-red-700 dark:text-red-400 block mb-0.5">Critical Risk Rating Alert</span>
-                  <p className="text-gray-500">Cybersecurity audit failed for VND-1014. Action requested.</p>
-                </div>
-                <div className="p-3 bg-orange-50 dark:bg-orange-950/20 border-l-4 border-orange-500 rounded">
-                  <span className="font-bold text-orange-700 block mb-0.5">Contract SLA Due for signature</span>
-                  <p className="text-gray-500">Apex Master SLA is pending executive sign-off.</p>
-                </div>
-                <div className="p-3 bg-gray-50 dark:bg-gray-800/20 rounded">
-                  <span className="font-semibold block mb-0.5">Integration sync successful</span>
-                  <p className="text-gray-400">SAP synchronization completed without errors.</p>
-                </div>
-              </div>
+              <button 
+                onClick={() => {
+                  setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+                  addToast('All message parameters marked read', 'success');
+                }}
+                disabled={!notifications.some(n => !n.read)}
+                className="w-full bg-[#111827] dark:bg-gray-850 hover:bg-orange-600 dark:hover:bg-orange-600 text-white font-bold p-2.5 rounded text-xs mt-6 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-[#111827] dark:disabled:hover:bg-gray-850"
+              >
+                Mark all items read
+              </button>
             </div>
-
-            <button 
-              onClick={() => {
-                setNotifOpen(false);
-                addToast('All message parameters marked check', 'success');
-              }}
-              className="w-full bg-[#111827] text-white font-bold p-2.5 rounded text-xs mt-6"
-            >
-              Mark all items read
-            </button>
           </div>
         </div>
       )}
