@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { ShieldAlert, Info, ArrowRight, Play, Eye, FileText, CheckCircle2, ChevronRight, X, AlertTriangle, Filter, Search } from 'lucide-react';
+import { ShieldAlert, Info, ArrowRight, Play, Eye, FileText, CheckCircle2, ChevronRight, X, AlertTriangle, Filter, Search, ArrowLeft } from 'lucide-react';
 import { Vendor, RiskAssessment } from '../dataStore';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
 
@@ -104,7 +104,7 @@ export function RiskAssessmentView({
     { name: 'Financial', value: 35, fill: '#ef4444' },
     { name: 'Operational', value: 25, fill: '#f97316' },
     { name: 'Compliance', value: 20, fill: '#eab308' },
-    { name: 'Cybersecurity', value: 15, fill: '#3b82f6' },
+    { name: 'Cybersecurity', value: 15, fill: '#f97316' },
     { name: 'Geopolitical', value: 5, fill: '#10b981' }
   ];
 
@@ -193,6 +193,155 @@ export function RiskAssessmentView({
     setRecommendations('');
   };
 
+  if (assessmentModalOpen) {
+    return (
+      <div className="flex-1 p-8 overflow-y-auto max-w-4xl mx-auto w-full">
+        {/* FORM HEADER */}
+        <div className="flex items-center gap-4 mb-8 border-b pb-4 border-slate-300 dark:border-slate-800">
+          <button
+            type="button"
+            onClick={() => setAssessmentModalOpen(false)}
+            className="p-2 bg-neo-base shadow-neo-btn hover:shadow-neo-btn-hover rounded-full transition text-neo-secondary"
+          >
+            <ArrowLeft size={18} />
+          </button>
+          <div>
+            <span className="text-[11px] font-bold text-neo-muted uppercase tracking-widest font-roboto">Audit Risk Assessment Console</span>
+            <h1 className="text-2xl font-black tracking-tight text-neo-primary uppercase font-roboto">Run New Risk Assessment</h1>
+          </div>
+        </div>
+
+        {/* FORM BOX */}
+        <div className="bg-neo-base shadow-neo-modal rounded-[20px] p-8">
+          <form onSubmit={handleAssessmentSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-xs font-bold uppercase text-neo-secondary mb-1">Select Vendor *</label>
+                <select
+                  required
+                  value={selectedVendorId}
+                  onChange={(e) => setSelectedVendorId(e.target.value)}
+                  className="w-full bg-neo-base shadow-neo-input border-0 rounded-[12px] h-[44px] px-4 text-xs outline-none focus:shadow-neo-input-focus cursor-pointer"
+                >
+                  <option value="">Choose Registry...</option>
+                  {vendors.map(v => (
+                    <option key={v.id} value={v.id}>{v.id} - {v.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase text-neo-secondary mb-1">Financial stability scale (1-5)</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="5"
+                  value={finStability}
+                  onChange={(e) => setFinStability(parseInt(e.target.value))}
+                  className="w-full bg-neo-base shadow-neo-input border-0 rounded-[12px] h-[44px] px-4 text-xs outline-none focus:shadow-neo-input-focus"
+                />
+              </div>
+            </div>
+
+            {/* Toggles */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="flex justify-between items-center p-4 bg-neo-base shadow-neo-card rounded-[12px]">
+                <div>
+                  <span className="text-xs font-bold text-neo-primary block">Litigation Risk</span>
+                  <span className="text-[10px] text-neo-muted">Outstanding lawsuit case ongoing</span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={outstandingLitigation}
+                  onChange={(e) => setOutstandingLitigation(e.target.checked)}
+                  className="w-5 h-5 bg-neo-base shadow-neo-input rounded cursor-pointer"
+                />
+              </div>
+
+              <div className="flex justify-between items-center p-4 bg-neo-base shadow-neo-card rounded-[12px]">
+                <div>
+                  <span className="text-xs font-bold text-neo-primary block">Single Source Dependency</span>
+                  <span className="text-[10px] text-neo-muted">Critical operational lock-in</span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={singleSource}
+                  onChange={(e) => setSingleSource(e.target.checked)}
+                  className="w-5 h-5 bg-neo-base shadow-neo-input rounded cursor-pointer"
+                />
+              </div>
+            </div>
+
+            {/* Cybersecurity / GDPR */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-xs font-bold uppercase text-neo-secondary mb-1">System Data Access Level</label>
+                <select
+                  value={dataAccess}
+                  onChange={(e) => setDataAccess(e.target.value as any)}
+                  className="w-full bg-neo-base shadow-neo-input border-0 rounded-[12px] h-[44px] px-4 text-xs outline-none cursor-pointer"
+                >
+                  <option>None</option>
+                  <option>Low</option>
+                  <option>Medium</option>
+                  <option>High</option>
+                  <option>Critical</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase text-neo-secondary mb-1">Geopolitical Stability index (1-5)</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="5"
+                  value={polStability}
+                  onChange={(e) => setPolStability(parseInt(e.target.value))}
+                  className="w-full bg-neo-base shadow-neo-input border-0 rounded-[12px] h-[44px] px-4 text-xs outline-none"
+                />
+              </div>
+            </div>
+
+            {/* Textarea recommendations */}
+            <div>
+              <label className="block text-xs font-bold uppercase text-neo-secondary mb-1">Mitigation Recommendations</label>
+              <textarea
+                rows={4}
+                value={recommendations}
+                onChange={(e) => setRecommendations(e.target.value)}
+                placeholder="e.g. Demand ISO-27001 recertification within 30 days..."
+                className="w-full bg-neo-base shadow-neo-input border-0 rounded-[12px] p-4 text-xs outline-none"
+              />
+            </div>
+
+            <div className="p-4 bg-neo-base shadow-neo-card rounded-[12px] flex justify-between items-center font-bold">
+              <span className="text-xs text-neo-secondary">Calculated Overall Score:</span>
+              <span className={`text-sm px-3 py-1 rounded shadow-neo-badge ${
+                computedScore >= 75 ? 'text-red-700 font-extrabold' : computedScore >= 45 ? 'text-orange-600 font-bold' : 'text-green-700 font-bold'
+              }`}>
+                {computedScore} / 100
+              </span>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-6 border-t border-slate-300 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setAssessmentModalOpen(false)}
+                className="px-5 py-2.5 bg-neo-base shadow-neo-btn hover:shadow-neo-btn-hover active:shadow-neo-btn-active text-xs font-bold text-neo-secondary rounded-[12px] transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-6 py-2.5 bg-neo-base shadow-neo-btn hover:shadow-neo-btn-hover active:shadow-neo-btn-active text-xs font-bold text-neo-accent rounded-[12px] transition"
+              >
+                Submit Audit
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 p-8 overflow-y-auto space-y-6">
       
@@ -205,7 +354,7 @@ export function RiskAssessmentView({
 
         <button
           onClick={() => setAssessmentModalOpen(true)}
-          className="flex items-center gap-1.5 px-4 py-2 text-xs font-black uppercase tracking-wider bg-blue-600 hover:bg-blue-700 text-white rounded shadow cursor-pointer"
+          className="flex items-center gap-1.5 px-4 py-2 text-xs font-black uppercase tracking-wider bg-orange-600 hover:bg-orange-700 text-white rounded shadow cursor-pointer"
         >
           <ShieldAlert size={14} /> Run New Assessment
         </button>
@@ -456,147 +605,6 @@ export function RiskAssessmentView({
               )}
             </div>
           </div>
-        </div>
-      )}
-
-      {/* RUN NEW RISK ASSESSMENT FORM MODAL */}
-      {assessmentModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55">
-          <form onSubmit={handleAssessmentSubmit} className="w-full max-w-2xl bg-neo-base shadow-neo-modal rounded-[20px] p-6 flex flex-col max-h-[90vh]">
-            <div className="flex justify-between items-center border-b border-slate-300 dark:border-slate-800 pb-3 shrink-0">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-neo-primary">
-                Audit Risk Assessment Form
-              </h3>
-              <button type="button" onClick={() => setAssessmentModalOpen(false)} className="text-neo-muted hover:text-neo-primary">
-                <X size={16} />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto py-4 space-y-6 pr-2">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-neo-secondary mb-1">Select Vendor</label>
-                  <select
-                    required
-                    value={selectedVendorId}
-                    onChange={(e) => setSelectedVendorId(e.target.value)}
-                    className="w-full bg-neo-base shadow-neo-input border-0 rounded-[12px] h-[38px] px-3 text-xs outline-none focus:shadow-neo-input-focus"
-                  >
-                    <option value="">Choose Registry...</option>
-                    {vendors.map(v => (
-                      <option key={v.id} value={v.id}>{v.id} - {v.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-neo-secondary mb-1">Financial stability scale (1-5)</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="5"
-                    value={finStability}
-                    onChange={(e) => setFinStability(parseInt(e.target.value))}
-                    className="w-full bg-neo-base shadow-neo-input border-0 rounded-[12px] h-[38px] px-3 text-xs outline-none focus:shadow-neo-input-focus"
-                  />
-                </div>
-              </div>
-
-              {/* Toggles */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex justify-between items-center p-3 bg-neo-base shadow-neo-card rounded-[12px]">
-                  <div>
-                    <span className="text-xs font-bold text-neo-primary block">Litigation Risk</span>
-                    <span className="text-[10px] text-neo-muted">Outstanding lawsuit case ongoing</span>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={outstandingLitigation}
-                    onChange={(e) => setOutstandingLitigation(e.target.checked)}
-                    className="w-5 h-5 bg-neo-base shadow-neo-input rounded cursor-pointer"
-                  />
-                </div>
-
-                <div className="flex justify-between items-center p-3 bg-neo-base shadow-neo-card rounded-[12px]">
-                  <div>
-                    <span className="text-xs font-bold text-neo-primary block">Single Source Dependency</span>
-                    <span className="text-[10px] text-neo-muted">Critical operational lock-in</span>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={singleSource}
-                    onChange={(e) => setSingleSource(e.target.checked)}
-                    className="w-5 h-5 bg-neo-base shadow-neo-input rounded cursor-pointer"
-                  />
-                </div>
-              </div>
-
-              {/* Cybersecurity / GDPR */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-neo-secondary mb-1">System Data Access Level</label>
-                  <select
-                    value={dataAccess}
-                    onChange={(e) => setDataAccess(e.target.value as any)}
-                    className="w-full bg-neo-base shadow-neo-input border-0 rounded-[12px] h-[38px] px-3 text-xs outline-none"
-                  >
-                    <option>None</option>
-                    <option>Low</option>
-                    <option>Medium</option>
-                    <option>High</option>
-                    <option>Critical</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-neo-secondary mb-1">Geopolitical Stability index (1-5)</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="5"
-                    value={polStability}
-                    onChange={(e) => setPolStability(parseInt(e.target.value))}
-                    className="w-full bg-neo-base shadow-neo-input border-0 rounded-[12px] h-[38px] px-3 text-xs outline-none"
-                  />
-                </div>
-              </div>
-
-              {/* Textarea recommendations */}
-              <div>
-                <label className="block text-xs font-semibold text-neo-secondary mb-1">Mitigation Recommendations</label>
-                <textarea
-                  rows={3}
-                  value={recommendations}
-                  onChange={(e) => setRecommendations(e.target.value)}
-                  placeholder="e.g. Demand ISO-27001 recertification within 30 days..."
-                  className="w-full bg-neo-base shadow-neo-input border-0 rounded-[12px] p-3 text-xs outline-none"
-                />
-              </div>
-
-              <div className="p-4 bg-neo-base shadow-neo-card rounded-[12px] flex justify-between items-center font-bold">
-                <span className="text-xs text-neo-secondary">Calculated Overall Score:</span>
-                <span className={`text-sm px-3 py-1 rounded shadow-neo-badge ${
-                  computedScore >= 75 ? 'text-red-700' : computedScore >= 45 ? 'text-orange-600' : 'text-green-700'
-                }`}>
-                  {computedScore} / 100
-                </span>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 border-t border-slate-300 dark:border-slate-800 pt-4 shrink-0">
-              <button
-                type="button"
-                onClick={() => setAssessmentModalOpen(false)}
-                className="px-4 py-2 bg-neo-base shadow-neo-btn hover:shadow-neo-btn-hover active:shadow-neo-btn-active text-xs font-bold text-neo-secondary rounded-[12px]"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-5 py-2 bg-neo-base shadow-neo-btn hover:shadow-neo-btn-hover active:shadow-neo-btn-active text-xs font-bold text-neo-accent rounded-[12px]"
-              >
-                Submit Audit
-              </button>
-            </div>
-          </form>
         </div>
       )}
 

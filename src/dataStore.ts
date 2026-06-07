@@ -405,7 +405,7 @@ export function generateSeedData() {
 
   const statuses: Vendor['status'][] = ['Active', 'Active', 'Active', 'Pending', 'Under Review', 'Inactive', 'Blocked'];
   const tiers: Vendor['tier'][] = ['Tier 1', 'Tier 2', 'Tier 2', 'Tier 3', 'Tier 3'];
-  const avatarColors = ["#2563EB", "#7C3AED", "#16A34A", "#D97706", "#DC2626", "#0891B2", "#4F46E5", "#059669", "#B45309", "#DB2777"];
+  const avatarColors = ["#ea580c", "#7C3AED", "#16A34A", "#D97706", "#DC2626", "#0891B2", "#4F46E5", "#059669", "#B45309", "#DB2777"];
 
   const vendors: Vendor[] = [];
   const esgScorecards: ESGScorecard[] = [];

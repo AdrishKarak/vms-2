@@ -1,31 +1,27 @@
 import React, { useState, useMemo } from 'react';
-import { ShoppingCart, FileSearch, FileText, Receipt, CheckCircle, Clock, X, Plus, Play, ChevronRight, Eye, CheckCircle2, AlertTriangle, RotateCcw, Filter, User } from 'lucide-react';
+import { ShoppingCart, FileSearch, FileText, Receipt, CheckCircle, Clock, X, Plus, Play, ChevronRight, Eye, CheckCircle2, AlertTriangle, RotateCcw, Filter, User, ArrowLeft } from 'lucide-react';
 import { PurchaseOrder, Contract, Invoice, Vendor } from '../dataStore';
 
 interface ProcurementProps {
   vendors: Vendor[];
   purchaseOrders: PurchaseOrder[];
-  contracts: Contract[];
   invoices: Invoice[];
   isDark: boolean;
   onAddPO: (po: PurchaseOrder) => void;
   onUpdatePOStatus: (id: string, status: PurchaseOrder['status']) => void;
-  onAddContract: (c: Contract) => void;
-  initialTab?: 'pos' | 'rfqs' | 'contracts' | 'invoices';
+  initialTab?: 'pos' | 'invoices';
 }
 
 export function Procurement({
   vendors,
   purchaseOrders,
-  contracts,
   invoices,
   isDark,
   onAddPO,
   onUpdatePOStatus,
-  onAddContract,
   initialTab
 }: ProcurementProps) {
-  const [tab, setTab] = useState<'pos' | 'rfqs' | 'contracts' | 'invoices'>(initialTab || 'pos');
+  const [tab, setTab] = useState<'pos' | 'invoices'>(initialTab || 'pos');
 
   React.useEffect(() => {
     if (initialTab) {
@@ -97,7 +93,7 @@ export function Procurement({
       case 'Overdue':
         return 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400 border-red-200';
       default:
-        return 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border-blue-200';
+        return 'bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 border-orange-200';
     }
   };
 
@@ -164,55 +160,142 @@ export function Procurement({
     setPoItems([{ code: 'ITM-9021', desc: 'Enterprise Server Node Upgrade', qty: 2, price: 1250 }]);
   };
 
-  const handleCreateContract = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!cTitle || !cVendorId) return;
+  if (isPoCreateOpen) {
+    return (
+      <div className="flex-1 p-8 overflow-y-auto max-w-4xl mx-auto w-full">
+        {/* FORM HEADER */}
+        <div className="flex items-center gap-4 mb-8 border-b pb-4 border-slate-205 dark:border-slate-800">
+          <button
+            onClick={() => setIsPoCreateOpen(false)}
+            className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition text-slate-600 dark:text-slate-300"
+          >
+            <ArrowLeft size={18} />
+          </button>
+          <div>
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest font-roboto">Global Procurement Documents Ledger</span>
+            <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white uppercase font-roboto">Draft General Purchase Order</h1>
+          </div>
+        </div>
 
-    const vObj = vendors.find(x => x.id === cVendorId);
-    if (!vObj) return;
+        {/* FORM BOX */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800 rounded-xl shadow-xl p-8">
+          <form onSubmit={handleCreatePO} className="space-y-6">
+            <div className="space-y-1">
+              <label className="text-[11px] font-bold uppercase text-slate-500 dark:text-slate-400 tracking-wider">PO Title *</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Server procurement nodes Q3"
+                value={poTitle}
+                onChange={e => setPoTitle(e.target.value)}
+                className="w-full text-sm text-slate-855 dark:text-slate-105 bg-white dark:bg-slate-850 border border-slate-202 dark:border-slate-707 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-600 outline-none transition"
+              />
+            </div>
 
-    const newC: Contract = {
-      id: `CTR-${String(100 + contracts.length + 1).padStart(4, '0')}`,
-      vendorId: cVendorId,
-      vendorName: vObj.name,
-      title: cTitle,
-      type: cType,
-      value: cVal,
-      startDate: cStart,
-      endDate: cEnd,
-      daysRemaining: 730,
-      status: 'Active',
-      owner: 'Alex Mercer',
-      autoRenew: cAutoRenew,
-      paymentTerms: 'Net 30',
-      noticePeriodDays: 60,
-      governingLaw: 'Delaware, US',
-      jurisdiction: 'Delaware court',
-      specialTerms: 'Standard SLA applies.',
-      milestones: [],
-      documents: []
-    };
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold uppercase text-slate-500 dark:text-slate-400 tracking-wider">Related Vendor *</label>
+                <select
+                  value={poVendorId}
+                  onChange={e => setPoVendorId(e.target.value)}
+                  required
+                  className="w-full text-sm text-slate-855 dark:text-slate-105 bg-white dark:bg-slate-850 border border-slate-202 dark:border-slate-707 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-600 outline-none transition cursor-pointer"
+                >
+                  <option value="">Select Vendor</option>
+                  {vendors.map(v => (
+                    <option key={v.id} value={v.id}>{v.name}</option>
+                  ))}
+                </select>
+              </div>
 
-    onAddContract(newC);
-    setIsContractCreateOpen(false);
-    // clear
-    setCTitle('');
-    setCVendorId('');
-  };
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold uppercase text-slate-500 dark:text-slate-400 tracking-wider">Payment Terms</label>
+                <select
+                  value={poTerms}
+                  onChange={e => setPoTerms(e.target.value)}
+                  className="w-full text-sm text-slate-855 dark:text-slate-105 bg-white dark:bg-slate-850 border border-slate-202 dark:border-slate-707 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-600 outline-none transition cursor-pointer"
+                >
+                  <option value="Net 15">Net 15</option>
+                  <option value="Net 30">Net 30</option>
+                  <option value="Net 60">Net 60</option>
+                </select>
+              </div>
+            </div>
 
-  // RFQ Bid Recommendations Highlight Award Matrix (Page 6)
-  const handleAwardRFQ = (bidName: string) => {
-    alert(`Successfully awarded Sourcing contract to ${bidName}! Initial Purchase order has been created.`);
-    setShowRfqBidModal(false);
-  };
+            {/* Editable items list list */}
+            <div className="space-y-4 border-t pt-4 border-slate-100 dark:border-slate-800">
+              <div className="flex justify-between items-center mb-1">
+                <label className="text-[11px] font-bold uppercase text-slate-550 dark:text-slate-400 tracking-wider">Line Items Calculator</label>
+                <button
+                  type="button"
+                  onClick={addPoItemRow}
+                  className="text-xs uppercase font-black text-orange-600 dark:text-orange-400 flex items-center gap-0.5 hover:underline"
+                >
+                  + Add Item Row
+                </button>
+              </div>
 
-  const activeRfqBids = [
-    { criteria: "Technical Fit/Compliance", vendorA: "Apex Tech: 94/100", vendorB: "Matrix Mfg: 82/100", vendorC: "ClearPath IT: 90/100", best: "Apex Tech" },
-    { criteria: "Pricing Quote (USD)", vendorA: "$120,000", vendorB: "$110,000", vendorC: "$130,005", best: "Matrix Mfg" },
-    { criteria: "Logistics / Lead Days", vendorA: "12 Days", vendorB: "18 Days", vendorC: "14 Days", best: "Apex Tech" },
-    { criteria: "ESG score", vendorA: "Gold (84)", vendorB: "Silver (68)", vendorC: "Gold (79)", best: "Apex Tech" },
-    { criteria: "Calculated Weight Rank", vendorA: "★ 91.2/100 Recommendation", vendorB: "80.5", vendorC: "85.4", best: "Apex Tech" }
-  ];
+              <div className="space-y-3">
+                {poItems.map((it, idx) => (
+                  <div key={idx} className="flex flex-col sm:flex-row gap-3 items-center">
+                    <input
+                      type="text"
+                      placeholder="Description"
+                      value={it.desc}
+                      onChange={e => updatePoItemRow(idx, 'desc', e.target.value)}
+                      className="w-full sm:flex-1 text-xs text-slate-855 dark:text-slate-105 bg-white dark:bg-slate-850 border border-slate-202 dark:border-slate-707 rounded px-3 py-1.5 outline-none focus:border-orange-600"
+                    />
+                    <div className="flex gap-2 w-full sm:w-auto">
+                      <input
+                        type="number"
+                        placeholder="Qty"
+                        value={it.qty}
+                        onChange={e => updatePoItemRow(idx, 'qty', Number(e.target.value))}
+                        className="w-20 text-xs text-slate-855 dark:text-slate-105 bg-white dark:bg-slate-850 border border-slate-202 dark:border-slate-707 rounded px-1.5 py-1.5 text-center outline-none focus:border-orange-600"
+                      />
+                      <input
+                        type="number"
+                        placeholder="Price"
+                        value={it.price}
+                        onChange={e => updatePoItemRow(idx, 'price', Number(e.target.value))}
+                        className="w-28 text-xs text-slate-855 dark:text-slate-105 bg-white dark:bg-slate-850 border border-slate-202 dark:border-slate-707 rounded px-1.5 py-1.5 text-center outline-none focus:border-orange-600"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[11px] font-bold uppercase text-slate-500 dark:text-slate-400 tracking-wider">Approval Comments / Note Context</label>
+              <textarea
+                rows={3}
+                value={poNotes}
+                onChange={e => setPoNotes(e.target.value)}
+                className="w-full text-sm text-slate-850 dark:text-slate-105 bg-white dark:bg-slate-850 border border-slate-202 dark:border-slate-707 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-600 outline-none transition"
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-6 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setIsPoCreateOpen(false)}
+                className="px-5 py-2.5 border border-slate-250 dark:border-slate-700 text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-bold text-xs uppercase transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-bold text-xs uppercase shadow-md transition"
+              >
+                Submit PO
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 p-8 overflow-y-auto">
@@ -227,31 +310,15 @@ export function Procurement({
           <button
             onClick={() => setTab('pos')}
             className={`flex items-center gap-1 px-3 py-1.5 text-xs font-black uppercase rounded ${
-              tab === 'pos' ? 'bg-blue-600 text-white shadow' : 'text-slate-650 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-700'
+              tab === 'pos' ? 'bg-orange-600 text-white shadow' : 'text-slate-650 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-700'
             }`}
           >
             <ShoppingCart size={13} /> Purchase Orders
           </button>
           <button
-            onClick={() => setTab('rfqs')}
-            className={`flex items-center gap-1 px-3 py-1.5 text-xs font-black uppercase rounded ${
-              tab === 'rfqs' ? 'bg-blue-600 text-white shadow' : 'text-slate-650 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-700'
-            }`}
-          >
-            <FileSearch size={13} /> RFQ / Sourcing
-          </button>
-          <button
-            onClick={() => setTab('contracts')}
-            className={`flex items-center gap-1 px-3 py-1.5 text-xs font-black uppercase rounded ${
-              tab === 'contracts' ? 'bg-blue-600 text-white shadow' : 'text-slate-650 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-700'
-            }`}
-          >
-            <FileText size={13} /> Contracts
-          </button>
-          <button
             onClick={() => setTab('invoices')}
             className={`flex items-center gap-1 px-3 py-1.5 text-xs font-black uppercase rounded ${
-              tab === 'invoices' ? 'bg-blue-600 text-white shadow' : 'text-slate-650 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-700'
+              tab === 'invoices' ? 'bg-orange-600 text-white shadow' : 'text-slate-650 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-700'
             }`}
           >
             <Receipt size={13} /> Invoices
@@ -269,7 +336,7 @@ export function Procurement({
                   key={f}
                   onClick={() => setPoFilter(f)}
                   className={`px-3 py-1 text-[11px] font-bold uppercase rounded ${
-                    poFilter === f ? 'bg-blue-600 text-white shadow' : 'text-slate-600 dark:text-slate-350'
+                    poFilter === f ? 'bg-orange-600 text-white shadow' : 'text-slate-600 dark:text-slate-350'
                   }`}
                 >
                   {f}
@@ -279,7 +346,7 @@ export function Procurement({
             
             <button
               onClick={() => setIsPoCreateOpen(true)}
-              className="flex items-center gap-1.5 px-4 py-2 text-xs font-black uppercase bg-blue-600 hover:bg-blue-700 text-white rounded shadow cursor-pointer"
+              className="flex items-center gap-1.5 px-4 py-2 text-xs font-black uppercase bg-orange-600 hover:bg-orange-700 text-white rounded shadow cursor-pointer"
             >
               <Plus size={14} /> Create Purchase Order
             </button>
@@ -301,7 +368,7 @@ export function Procurement({
                 .filter(po => poFilter === 'All' || po.status === poFilter)
                 .slice(0, 10)
                 .map(po => (
-                  <tr key={po.id} className="hover:bg-blue-50/10 dark:hover:bg-slate-800/40">
+                  <tr key={po.id} className="hover:bg-orange-50/10 dark:hover:bg-slate-800/40">
                     <td className="p-3 text-xs font-mono font-bold text-slate-900 dark:text-white">{po.id}</td>
                     <td className="p-3 text-13px font-bold text-slate-805 dark:text-slate-205">{po.vendorName}</td>
                     <td className="p-3 text-xs font-mono">{po.itemsCount} items</td>
@@ -326,122 +393,6 @@ export function Procurement({
         </div>
       )}
 
-      {/* RENDER RFQS TAB */}
-      {tab === 'rfqs' && (
-        <div className="space-y-6">
-          <div className="bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800 rounded-lg p-5 shadow-sm">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase mb-1 font-roboto tracking-tight">Active sourcing campaigns</h3>
-            <p className="text-12px text-slate-400 mb-4">Click "Compare Responses" to display Multi-criteria Vendor scoring</p>
-
-            <table className="w-full border-collapse text-left">
-              <thead>
-                <tr className="bg-slate-50 dark:bg-slate-800/30 border-b border-slate-200 dark:border-slate-800">
-                  <th className="p-3 text-[10px] font-bold uppercase text-slate-400">RFQ Ref</th>
-                  <th className="p-3 text-[10px] font-bold uppercase text-slate-400">Sourcing Campaign Title</th>
-                  <th className="p-3 text-[10px] font-bold uppercase text-slate-400">Responses</th>
-                  <th className="p-3 text-[10px] font-bold uppercase text-slate-400">Deadline</th>
-                  <th className="p-3 text-[10px] font-bold uppercase text-slate-400">Status</th>
-                  <th className="p-3 text-[10px] font-bold uppercase text-slate-400 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {mockRfqs.map(rfq => (
-                  <tr key={rfq.id} className="hover:bg-blue-50/10 dark:hover:bg-slate-800/40">
-                    <td className="p-3 text-xs font-mono font-bold text-slate-900 dark:text-white">{rfq.id}</td>
-                    <td className="p-3 text-13px font-bold text-slate-800 dark:text-slate-200">{rfq.title}</td>
-                    <td className="p-3 text-xs font-mono font-bold text-blue-600">{rfq.responses} Bids Received</td>
-                    <td className="p-3 text-12px text-slate-500">{rfq.deadline}</td>
-                    <td className="p-3">
-                      <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 rounded text-[10px] font-bold border border-blue-200/50">
-                        {rfq.status}
-                      </span>
-                    </td>
-                    <td className="p-3 text-right">
-                      <button
-                        onClick={() => {
-                          setSelectedRfqBid(rfq);
-                          setShowRfqBidModal(true);
-                        }}
-                        className="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider bg-blue-600 hover:bg-blue-700 text-white rounded cursor-pointer"
-                      >
-                        Compare Responses
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* RENDER CONTRACTS TAB */}
-      {tab === 'contracts' && (
-        <div className="bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800 rounded-lg shadow-sm">
-          <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between bg-slate-50 dark:bg-slate-800/40 gap-4">
-            <div className="flex border border-slate-250 dark:border-slate-700 bg-white dark:bg-slate-800 p-0.5 rounded">
-              {['All', 'Active', 'Expiring Soon', 'Expired'].map(f => (
-                <button
-                  key={f}
-                  onClick={() => setContractFilter(f)}
-                  className={`px-3 py-1 text-[11px] font-bold uppercase rounded ${
-                    contractFilter === f ? 'bg-blue-600 text-white shadow' : 'text-slate-600 dark:text-slate-350'
-                  }`}
-                >
-                  {f}
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={() => setIsContractCreateOpen(true)}
-              className="flex items-center gap-1.5 px-4 py-2 text-xs font-black uppercase bg-blue-600 hover:bg-blue-700 text-white rounded shadow cursor-pointer"
-            >
-              <Plus size={14} /> New Contract
-            </button>
-          </div>
-
-          <table className="w-full border-collapse text-left">
-            <thead>
-              <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
-                <th className="p-3 text-[10px] font-bold uppercase text-slate-400">Contract ID</th>
-                <th className="p-3 text-[10px] font-bold uppercase text-slate-400">Vendor</th>
-                <th className="p-3 text-[10px] font-bold uppercase text-slate-400">Values</th>
-                <th className="p-3 text-[10px] font-bold uppercase text-slate-400">End Date</th>
-                <th className="p-3 text-[10px] font-bold uppercase text-slate-400">Tracking Status</th>
-                <th className="p-3 text-[10px] font-bold uppercase text-slate-400 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {contracts
-                .filter(c => contractFilter === 'All' || c.status === contractFilter)
-                .slice(0, 10)
-                .map(c => (
-                  <tr key={c.id} className="hover:bg-blue-50/10 dark:hover:bg-slate-800/40">
-                    <td className="p-3 text-xs font-mono font-bold text-slate-900 dark:text-white">{c.id}</td>
-                    <td className="p-3 text-13px font-bold text-slate-800 dark:text-slate-200">{c.vendorName}</td>
-                    <td className="p-3 text-xs font-mono font-bold">${c.value.toLocaleString()}</td>
-                    <td className="p-3 text-12px text-slate-500">{c.endDate}</td>
-                    <td className="p-3">
-                      <span className={`px-2 py-0.5 border text-[10.5px] font-black uppercase rounded ${statusColors(c.status)}`}>
-                        {c.status}
-                      </span>
-                    </td>
-                    <td className="p-3 text-right">
-                      <button
-                        onClick={() => setSelectedContract(c)}
-                        className="px-2.5 py-1 text-[10px] font-black uppercase bg-slate-100 dark:bg-slate-800 border border-slate-250 dark:border-slate-700 text-slate-800 hover:bg-slate-200 rounded dark:text-white cursor-pointer"
-                      >
-                        Details
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
       {/* RENDER INVOICES TAB */}
       {tab === 'invoices' && (
         <div className="bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800 rounded-lg shadow-sm">
@@ -452,7 +403,7 @@ export function Procurement({
                   key={f}
                   onClick={() => setInvoiceFilter(f)}
                   className={`px-3 py-1 text-[11px] font-bold uppercase rounded ${
-                    invoiceFilter === f ? 'bg-blue-600 text-white shadow' : 'text-slate-600 dark:text-slate-350'
+                    invoiceFilter === f ? 'bg-orange-600 text-white shadow' : 'text-slate-600 dark:text-slate-350'
                   }`}
                 >
                   {f}
@@ -477,7 +428,7 @@ export function Procurement({
                 .filter(inv => invoiceFilter === 'All' || inv.status === invoiceFilter)
                 .slice(0, 10)
                 .map(inv => (
-                  <tr key={inv.id} className="hover:bg-blue-50/10 dark:hover:bg-slate-800/40">
+                  <tr key={inv.id} className="hover:bg-orange-50/10 dark:hover:bg-slate-800/40">
                     <td className="p-3 text-xs font-mono font-bold text-slate-900 dark:text-white">{inv.id}</td>
                     <td className="p-3 text-13px font-bold text-slate-800 dark:text-slate-200">{inv.vendorName}</td>
                     <td className="p-3 text-xs font-mono">{inv.poRef}</td>
@@ -575,9 +526,9 @@ export function Procurement({
 
               {/* Approve / Reject action toggles for PO */}
               {selectedPO.status === 'Pending Approval' && (
-                <div className="flex gap-4 p-4 border border-blue-10/50 bg-blue-50/10 dark:bg-blue-950/20 rounded-lg">
+                <div className="flex gap-4 p-4 border border-orange-10/50 bg-orange-50/10 dark:bg-orange-950/20 rounded-lg">
                   <div className="flex-1">
-                    <h5 className="text-12px font-bold text-blue-700 dark:text-blue-400 uppercase">Awaiting your approval</h5>
+                    <h5 className="text-12px font-bold text-orange-700 dark:text-orange-400 uppercase">Awaiting your approval</h5>
                     <p className="text-xs text-slate-500 mt-1">This PO exceeds self-sign limit and is routed for your manual clearance.</p>
                   </div>
                   <div className="flex gap-2 items-center">
@@ -616,59 +567,7 @@ export function Procurement({
         </div>
       )}
 
-      {/* CONTRACTS DETAIL POPUP */}
-      {selectedContract && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800 rounded-lg shadow-2xl overflow-hidden animate-scale-in">
-            <div className="px-6 py-4 border-b border-slate-205 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-805">
-              <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white uppercase font-roboto">Contract profile: {selectedContract.id}</h3>
-                <p className="text-[10px] text-slate-400 font-bold uppercase mt-0.5">Type: {selectedContract.type} · {selectedContract.vendorName}</p>
-              </div>
-              <button onClick={() => setSelectedContract(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white">
-                <X size={16} />
-              </button>
-            </div>
 
-            <div className="p-6 space-y-4 max-h-[500px] overflow-y-auto">
-              <div className="grid grid-cols-2 gap-4 text-xs">
-                <div>
-                  <span className="text-[10px] font-bold text-slate-405 uppercase">Value benchmark</span>
-                  <p className="text-13px font-bold font-mono text-slate-800">${selectedContract.value.toLocaleString()}</p>
-                </div>
-                <div>
-                  <span className="text-[10px] font-bold text-slate-405 uppercase">Auto Renew Status</span>
-                  <p className="text-13px font-bold text-slate-800">{selectedContract.autoRenew ? 'Enabled ✓' : 'Disabled'}</p>
-                </div>
-                <div>
-                  <span className="text-[10px] font-bold text-slate-405 uppercase">Start Date</span>
-                  <p className="text-13px font-bold text-slate-800">{selectedContract.startDate}</p>
-                </div>
-                <div>
-                  <span className="text-[10px] font-bold text-slate-405 uppercase">Expiration Date</span>
-                  <p className="text-13px font-bold text-slate-800">{selectedContract.endDate}</p>
-                </div>
-              </div>
-
-              <div className="p-4 bg-slate-50 dark:bg-slate-805 border border-slate-150 dark:border-slate-800 rounded">
-                <span className="text-[10px] font-bold text-slate-500 uppercase">Governing SLA Terms</span>
-                <p className="text-xs text-slate-600 mt-1 italic">
-                  "{selectedContract.specialTerms || 'All SLA parameters map directly into core procurement limits.'}"
-                </p>
-              </div>
-            </div>
-
-            <div className="px-6 py-4 border-t border-slate-205 dark:border-slate-800 flex justify-end gap-3 bg-slate-50 dark:bg-slate-800/20">
-              <button
-                onClick={() => setSelectedContract(null)}
-                className="px-4 py-2 border border-slate-250 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-350 rounded font-bold text-[10px] uppercase"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* THREE WAY MATCH CHECKS FOR INVOICE */}
       {selectedInvoice && (
@@ -742,291 +641,6 @@ export function Procurement({
         </div>
       )}
 
-      {/* COMPACT RFQ RESPONSE BID MATRIX MODAL (Page 6) */}
-      {showRfqBidModal && selectedRfqBid && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800 rounded-lg shadow-2xl overflow-hidden animate-scale-in">
-            <div className="px-6 py-4 border-b border-slate-205 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-805">
-              <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white uppercase font-roboto">Bid Sourcing Response Matrix</h3>
-                <p className="text-[10px] text-slate-400 font-bold uppercase mt-0.5">{selectedRfqBid.title}</p>
-              </div>
-              <button onClick={() => setShowRfqBidModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white">
-                <X size={16} />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-4 max-h-[500px] overflow-y-auto">
-              <p className="text-xs text-slate-500">Evaluated on weights: 40% Pricing, 30% Compliance, 30% Delivery timelines.</p>
-              
-              <div className="border border-slate-150 dark:border-slate-800 rounded-lg overflow-hidden">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="bg-slate-50 dark:bg-slate-805 border-b border-slate-150 dark:border-slate-800 font-bold text-slate-700 text-[10px] uppercase">
-                      <th className="p-2.5">Evaluation Criteria</th>
-                      <th className="p-2.5">Apex Tech (Tier 1)</th>
-                      <th className="p-2.5">Matrix Mfg (Tier 2)</th>
-                      <th className="p-2.5">ClearPath IT</th>
-                      <th className="p-2.5 text-right text-blue-600">Selected Winner</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
-                    {activeRfqBids.map((b, idx) => (
-                      <tr key={idx}>
-                        <td className="p-2.5 font-bold text-slate-700">{b.criteria}</td>
-                        <td className="p-2.5">{b.vendorA}</td>
-                        <td className="p-2.5">{b.vendorB}</td>
-                        <td className="p-2.5">{b.vendorC}</td>
-                        <td className="p-2.5 text-right text-green-600 font-bold">{b.best}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-4">
-                <button
-                  onClick={() => handleAwardRFQ('Apex Tech')}
-                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded font-bold text-[10px] uppercase"
-                >
-                  Award Draft to Apex Tech (Verified Winner)
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* PO CREATION FORM MODAL */}
-      {isPoCreateOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="w-full max-w-xl bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800 rounded-lg shadow-2xl overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-205 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-805">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white uppercase font-roboto">Draft General Purchase Order</h3>
-              <button onClick={() => setIsPoCreateOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white">
-                <X size={16} />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreatePO} className="p-6 space-y-4 max-h-[500px] overflow-y-auto">
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold uppercase text-slate-500">PO Title *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Server procurement nodes Q3"
-                  value={poTitle}
-                  onChange={e => setPoTitle(e.target.value)}
-                  className="w-full text-xs text-slate-80-0 dark:text-slate-100 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700 rounded px-3 py-2 outline-none focus:border-blue-600"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase text-slate-500">Related Vendor *</label>
-                  <select
-                    value={poVendorId}
-                    onChange={e => setPoVendorId(e.target.value)}
-                    required
-                    className="w-full text-xs text-slate-850 dark:text-slate-100 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700 rounded px-2.5 py-2 outline-none focus:border-blue-600"
-                  >
-                    <option value="">Select Vendor</option>
-                    {vendors.map(v => (
-                      <option key={v.id} value={v.id}>{v.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase text-slate-500">Payment Terms</label>
-                  <select
-                    value={poTerms}
-                    onChange={e => setPoTerms(e.target.value)}
-                    className="w-full text-xs text-slate-850 dark:text-slate-100 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700 rounded px-2.5 py-2 outline-none focus:border-blue-600"
-                  >
-                    <option value="Net 15">Net 15</option>
-                    <option value="Net 30">Net 30</option>
-                    <option value="Net 60">Net 60</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Editable items list list */}
-              <div className="space-y-2 border-t pt-2">
-                <div className="flex justify-between items-center mb-1">
-                  <label className="text-[10px] font-bold uppercase text-slate-500">Line Items Calculator</label>
-                  <button
-                    type="button"
-                    onClick={addPoItemRow}
-                    className="text-[10px] uppercase font-black text-blue-600 flex items-center gap-0.5 hover:underline"
-                  >
-                    + Add Item Row
-                  </button>
-                </div>
-
-                {poItems.map((it, idx) => (
-                  <div key={idx} className="flex gap-2 items-center">
-                    <input
-                      type="text"
-                      placeholder="Description"
-                      value={it.desc}
-                      onChange={e => updatePoItemRow(idx, 'desc', e.target.value)}
-                      className="flex-1 text-xs text-slate-850 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 outline-none"
-                    />
-                    <input
-                      type="number"
-                      placeholder="Qty"
-                      value={it.qty}
-                      onChange={e => updatePoItemRow(idx, 'qty', Number(e.target.value))}
-                      className="w-14 text-xs text-slate-850 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700 rounded px-1.5 py-1 text-center outline-none"
-                    />
-                    <input
-                      type="number"
-                      placeholder="Price"
-                      value={it.price}
-                      onChange={e => updatePoItemRow(idx, 'price', Number(e.target.value))}
-                      className="w-20 text-xs text-slate-850 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700 rounded px-1.5 py-1 text-center outline-none"
-                    />
-                  </div>
-                ))}
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold uppercase text-slate-500">Approval Comments / Note Context</label>
-                <textarea
-                  rows={2}
-                  value={poNotes}
-                  onChange={e => setPoNotes(e.target.value)}
-                  className="w-full text-xs text-slate-850 bg-white dark:bg-slate-850 border border-slate-201 dark:border-slate-705 rounded px-2.5 py-1.5 outline-none"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setIsPoCreateOpen(false)}
-                  className="px-4 py-2 border border-slate-250 dark:border-slate-700 text-slate-700 dark:text-slate-350 rounded font-bold text-[10px] uppercase"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-bold text-[10px] uppercase shadow"
-                >
-                  Submit PO
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* CONTRACT CREATION FORM */}
-      {isContractCreateOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800 rounded-lg shadow-2xl overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-205 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-805">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white uppercase font-roboto">Register Sourcing Contract Profile</h3>
-              <button onClick={() => setIsContractCreateOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white">
-                <X size={16} />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateContract} className="p-6 space-y-4">
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold uppercase text-slate-500">Contract Title *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Master Services Frame Agreement SLA"
-                  value={cTitle}
-                  onChange={e => setCTitle(e.target.value)}
-                  className="w-full text-xs text-slate-850 dark:text-slate-100 bg-white dark:bg-slate-850 border border-slate-201 dark:border-slate-700 rounded px-2.5 py-1.5 outline-none"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase text-slate-500">Related Vendor *</label>
-                  <select
-                    value={cVendorId}
-                    onChange={e => setCVendorId(e.target.value)}
-                    required
-                    className="w-full text-xs text-slate-850 dark:text-slate-100 bg-white dark:bg-slate-850 border border-slate-201 dark:border-slate-700 rounded px-2.5 py-2 outline-none"
-                  >
-                    <option value="">Select Vendor</option>
-                    {vendors.map(v => (
-                      <option key={v.id} value={v.id}>{v.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase text-slate-500">Contract Value ($) *</label>
-                  <input
-                    type="number"
-                    value={cVal}
-                    onChange={e => setCVal(Number(e.target.value))}
-                    required
-                    className="w-full text-xs text-slate-850 dark:text-slate-100 bg-white dark:bg-slate-850 border border-slate-201 dark:border-slate-700 rounded px-2.5 py-1.5 outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase text-slate-500">Start Date</label>
-                  <input
-                    type="date"
-                    value={cStart}
-                    onChange={e => setCStart(e.target.value)}
-                    className="w-full text-xs text-slate-850 dark:text-slate-100 bg-white dark:bg-slate-850 border border-slate-201 dark:border-slate-700 rounded px-2.5 py-1.5 outline-none"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase text-slate-500">End Date</label>
-                  <input
-                    type="date"
-                    value={cEnd}
-                    onChange={e => setCEnd(e.target.value)}
-                    className="w-full text-xs text-slate-850 dark:text-slate-100 bg-white dark:bg-slate-850 border border-slate-201 dark:border-slate-700 rounded px-2.5 py-1.5 outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="c-auto"
-                  checked={cAutoRenew}
-                  onChange={e => setCAutoRenew(e.target.checked)}
-                  className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                />
-                <label htmlFor="c-auto" className="text-xs font-semibold text-slate-700 dark:text-slate-350">
-                  Enable auto-renewal notice (60-day window)
-                </label>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setIsContractCreateOpen(false)}
-                  className="px-4 py-2 border border-slate-250 dark:border-slate-700 text-slate-700 dark:text-slate-350 rounded font-bold text-[10px] uppercase"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-bold text-[10px] uppercase"
-                >
-                  Save Contract
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

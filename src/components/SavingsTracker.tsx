@@ -5,7 +5,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { 
-  PiggyBank, ArrowDown, HelpCircle, Plus, Search, Trash2, Edit, Check, Upload, X 
+  PiggyBank, ArrowDown, HelpCircle, Plus, Search, Trash2, Edit, Check, Upload, X, ArrowLeft
 } from 'lucide-react';
 import { SavingsInitiative, Vendor } from '../dataStore';
 import { ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
@@ -55,7 +55,7 @@ export const SavingsTracker: React.FC<SavingsTrackerProps> = ({
 
   const waterfallData = useMemo(() => {
     return [
-      { name: 'Baseline', value: 3800, fill: '#3B82F6' },
+      { name: 'Baseline', value: 3800, fill: '#f97316' },
       { name: 'Consolidation', value: 3400, fill: '#10B981' },
       { name: 'Volume Disc.', value: 3100, fill: '#10B981' },
       { name: 'SLA Penalties', value: 2950, fill: '#10B981' },
@@ -89,7 +89,7 @@ export const SavingsTracker: React.FC<SavingsTrackerProps> = ({
       title: newTitle,
       category: newCategory,
       vendorId: newVendorId,
-      vendorName: selectedVendor?.name || 'Sovereign Solutions Ltd',
+      vendorName: selectedVendor?.name || 'Amit Alliance',
       savingType: newSavingType,
       baseline: newBaseline,
       negotiated: newNegotiated,
@@ -107,6 +107,147 @@ export const SavingsTracker: React.FC<SavingsTrackerProps> = ({
     setNewTitle('');
     setAddModalOpen(false);
   };
+
+  if (addModalOpen) {
+    return (
+      <div className="flex-1 p-8 overflow-y-auto w-full bg-[#F4F5F7] dark:bg-[#0D1117] text-[#111827] dark:text-[#F1F5F9] transition-colors duration-200">
+        {/* FORM HEADER */}
+        <div className="flex items-center gap-4 mb-8 border-b pb-4 border-gray-200 dark:border-gray-800">
+          <button
+            onClick={() => setAddModalOpen(false)}
+            className="p-2 hover:bg-gray-200 dark:hover:bg-slate-800 rounded-full transition text-gray-600 dark:text-gray-300"
+          >
+            <ArrowLeft size={18} />
+          </button>
+          <div>
+            <span className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest font-roboto">Cost Savings Procurement Tracker</span>
+            <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white uppercase font-roboto flex items-center gap-2">
+              <PiggyBank className="text-green-600" /> Log New Cost Savings Metric
+            </h1>
+          </div>
+        </div>
+
+        {/* FORM BOX */}
+        <div className="bg-white dark:bg-[#161B27] border border-gray-200 dark:border-gray-800 rounded-xl shadow-xl p-8 max-w-4xl">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-1">
+              <label className="block text-xs font-semibold text-gray-500 mb-1 font-sans">Reduction Initiative Title *</label>
+              <input 
+                type="text" 
+                required
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                placeholder="e.g. AWS Multi-Region Node Consolidation plan"
+                className="w-full bg-transparent border border-gray-300 dark:border-gray-700 rounded px-3 py-2 text-xs outline-none focus:border-green-500"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Target Supplier Partner</label>
+                <select
+                  value={newVendorId}
+                  onChange={(e) => setNewVendorId(e.target.value)}
+                  className="w-full bg-transparent border border-gray-300 dark:border-gray-700 rounded px-2 py-2 text-xs outline-none focus:border-green-500"
+                >
+                  <option value="">Select Partner...</option>
+                  {vendors.map(v => (
+                    <option key={v.id} value={v.id}>{v.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Reduction Category</label>
+                <select
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                  className="w-full bg-transparent border border-gray-300 dark:border-gray-700 rounded px-2 py-2 text-xs outline-none"
+                >
+                  <option value="IT Services">IT Services</option>
+                  <option value="Logistics">Logistics</option>
+                  <option value="Raw Materials">Raw Materials</option>
+                  <option value="Consulting">Consulting</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Baseline Cost ($) *</label>
+                <input 
+                  type="number"
+                  value={newBaseline}
+                  onChange={(e) => setNewBaseline(parseFloat(e.target.value) || 0)}
+                  className="w-full bg-transparent border border-gray-300 dark:border-gray-700 rounded px-3 py-2 text-xs outline-none focus:border-green-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Negotiated Cost ($) *</label>
+                <input 
+                  type="number"
+                  value={newNegotiated}
+                  onChange={(e) => setNewNegotiated(parseFloat(e.target.value) || 0)}
+                  className="w-full bg-transparent border border-gray-300 dark:border-gray-700 rounded px-3 py-2 text-xs outline-none focus:border-green-500"
+                />
+              </div>
+            </div>
+
+            {/* Dynamic computed parameters */}
+            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg flex justify-between text-xs items-center border border-gray-250 dark:border-gray-750">
+              <div>
+                <span className="block text-[10px] text-gray-400 font-bold uppercase">Projected Instant Net Saving</span>
+                <span className="font-extrabold text-green-600 dark:text-green-450 text-base">${computedSavingsVal.toLocaleString()}</span>
+              </div>
+              <span className="bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-450 px-3 py-1 rounded-full text-[11px] font-black">
+                -{computedSavingsPercent}% Credit
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Status Code</label>
+                <select
+                  value={newStatus}
+                  onChange={(e) => setNewStatus(e.target.value as any)}
+                  className="w-full bg-transparent border border-gray-300 dark:border-gray-700 rounded px-2 py-2 text-xs outline-none"
+                >
+                  <option value="Realized">Realized</option>
+                  <option value="Projected">Projected</option>
+                  <option value="Pipeline">Pipeline</option>
+                  <option value="On Hold">On Hold</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Realization Target Date</label>
+                <input 
+                  type="date"
+                  value={newTargetDate}
+                  onChange={(e) => setNewTargetDate(e.target.value)}
+                  className="w-full bg-transparent border border-gray-300 dark:border-gray-700 rounded px-3 py-2 text-xs outline-none focus:border-green-500"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-800">
+              <button 
+                type="button" 
+                onClick={() => setAddModalOpen(false)}
+                className="px-4 py-2 border border-gray-350 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-slate-800 rounded font-semibold text-xs text-gray-500 transition"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-bold text-xs rounded shadow transition"
+              >
+                Seal Saving Metric
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#F4F5F7] dark:bg-[#0D1117] text-[#111827] dark:text-[#F1F5F9] overflow-y-auto transition-colors duration-200">
@@ -162,10 +303,10 @@ export const SavingsTracker: React.FC<SavingsTrackerProps> = ({
                 $2.50M
               </p>
               <div className="w-full bg-gray-100 dark:bg-gray-800 h-2 rounded-full mt-2 overflow-hidden">
-                <div className="h-full bg-blue-500" style={{ width: `${progressPercent}%` }}></div>
+                <div className="h-full bg-orange-500" style={{ width: `${progressPercent}%` }}></div>
               </div>
             </div>
-            <span className="text-[10px] text-blue-500 font-bold mt-1.5">{progressPercent}% Achieved</span>
+            <span className="text-[10px] text-orange-500 font-bold mt-1.5">{progressPercent}% Achieved</span>
           </div>
 
           <div className="bg-white dark:bg-[#161B27] p-5 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between">
@@ -296,7 +437,7 @@ export const SavingsTracker: React.FC<SavingsTrackerProps> = ({
                     <td className="p-4 text-center">
                       <span className={`px-2 py-0.5 text-[10px] font-black rounded ${
                         ini.status === 'Realized' ? 'bg-green-155 text-green-700 bg-green-50' : 
-                        ini.status === 'Projected' ? 'bg-blue-50 text-blue-700' : 
+                        ini.status === 'Projected' ? 'bg-orange-50 text-orange-700' : 
                         ini.status === 'Pipeline' ? 'bg-amber-50 text-amber-700' : 'bg-gray-100 text-gray-600'
                       }`}>
                         {ini.status}
@@ -313,137 +454,7 @@ export const SavingsTracker: React.FC<SavingsTrackerProps> = ({
 
       </div>
 
-      {/* Add Initiative Modal */}
-      {addModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-[#161B27] border border-gray-200 dark:border-gray-800 rounded-lg shadow-2xl max-w-md w-full overflow-hidden">
-            <div className="bg-gray-50 dark:bg-[#1C2333] px-6 py-4 border-b border-gray-150 dark:border-gray-800 flex justify-between items-center">
-              <h3 className="font-roboto font-extrabold text-sm uppercase tracking-wider">
-                Log New Cost Savings Metric
-              </h3>
-              <button onClick={() => setAddModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                <X size={18} />
-              </button>
-            </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1 font-sans">Reduction Initiative Title *</label>
-                <input 
-                  type="text" 
-                  required
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  placeholder="e.g. AWS Multi-Region Node Consolidation plan"
-                  className="w-full bg-transparent border border-gray-300 dark:border-gray-700 rounded px-3 py-1.5 text-xs outline-none focus:border-green-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Target Supplier Partner</label>
-                  <select
-                    value={newVendorId}
-                    onChange={(e) => setNewVendorId(e.target.value)}
-                    className="w-full bg-transparent border border-gray-300 dark:border-gray-700 rounded px-2 py-1.5 text-xs outline-none focus:border-green-500"
-                  >
-                    <option value="">Select Partner...</option>
-                    {vendors.map(v => (
-                      <option key={v.id} value={v.id}>{v.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Reduction Category</label>
-                  <select
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
-                    className="w-full bg-transparent border border-gray-300 dark:border-gray-700 rounded px-2 py-1 text-xs outline-none"
-                  >
-                    <option value="IT Services">IT Services</option>
-                    <option value="Logistics">Logistics</option>
-                    <option value="Raw Materials">Raw Materials</option>
-                    <option value="Consulting">Consulting</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Baseline Cost ($) *</label>
-                  <input 
-                    type="number"
-                    value={newBaseline}
-                    onChange={(e) => setNewBaseline(parseFloat(e.target.value) || 0)}
-                    className="w-full bg-transparent border border-gray-300 dark:border-gray-700 rounded px-3 py-1 text-xs outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Negotiated Cost ($) *</label>
-                  <input 
-                    type="number"
-                    value={newNegotiated}
-                    onChange={(e) => setNewNegotiated(parseFloat(e.target.value) || 0)}
-                    className="w-full bg-transparent border border-gray-300 dark:border-gray-700 rounded px-3 py-1 text-xs outline-none"
-                  />
-                </div>
-              </div>
-
-              {/* Dynamic computed parameters */}
-              <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded flex justify-between text-xs items-center">
-                <div>
-                  <span className="block text-[10px] text-gray-400">Projected Instant Net Saving</span>
-                  <span className="font-extrabold text-green-600 text-sm">${computedSavingsVal.toLocaleString()}</span>
-                </div>
-                <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px] font-black">
-                  -{computedSavingsPercent}% Credit
-                </span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Status Code</label>
-                  <select
-                    value={newStatus}
-                    onChange={(e) => setNewStatus(e.target.value as any)}
-                    className="w-full bg-transparent border border-gray-300 dark:border-gray-700 rounded px-2 py-1 text-xs outline-none"
-                  >
-                    <option value="Realized">Realized</option>
-                    <option value="Projected">Projected</option>
-                    <option value="Pipeline">Pipeline</option>
-                    <option value="On Hold">On Hold</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">Realization Target Date</label>
-                  <input 
-                    type="date"
-                    value={newTargetDate}
-                    onChange={(e) => setNewTargetDate(e.target.value)}
-                    className="w-full bg-transparent border border-gray-300 dark:border-gray-700 rounded px-3 py-1 text-xs outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
-                <button 
-                  type="button" 
-                  onClick={() => setAddModalOpen(false)}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-750 hover:bg-gray-50 rounded font-semibold text-xs text-gray-500"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit" 
-                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-bold text-xs rounded shadow"
-                >
-                  Seal Saving Metric
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
     </div>
   );

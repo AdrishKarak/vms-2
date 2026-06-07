@@ -9,30 +9,32 @@ import {
   FileSearch, FileText, Receipt, ShieldAlert, FolderLock, ClipboardList, 
   Wallet, TrendingUp, Users, Settings, Bell, Search, Moon, Sun, 
   Plus, X, Clock, ArrowUpRight, ArrowDownRight, Calendar as LucideCalendar, 
-  PiggyBank, Leaf, ChevronLeft, ChevronRight, Minimize2, Check, 
+  PiggyBank, Leaf, ChevronLeft, ChevronRight, Minimize2, Check, ArrowLeft,
   AlertTriangle, Eye, Edit2, Trash2, Info, RefreshCw, Send, 
   CheckSquare, Download, Filter, Columns, GripVertical, HelpCircle, 
-  FileCheck, DollarSign, Award, Grid, List, GitCompare, Sparkles
+  FileCheck, DollarSign, Award, Grid, List, GitCompare, Sparkles,
+  Package, PackageCheck, FileSpreadsheet, Layers
 } from 'lucide-react';
 
 import { 
   generateInitialMockData, generateSeedData, Vendor, PurchaseOrder, Contract, Invoice, 
-  RiskAssessment, ESGScorecard as ESGScorecardType, CalendarEvent, 
-  SavingsInitiative, AuditLog, User, ComplianceDoc 
+  RiskAssessment, CalendarEvent, 
+  SavingsInitiative, AuditLog, User 
 } from './dataStore';
 
 // Subcomponents
 import { CalendarView } from './components/CalendarView';
 import { VendorCompare } from './components/VendorCompare';
-import { ESGScorecard } from './components/ESGScorecard';
 import { SavingsTracker } from './components/SavingsTracker';
-import { Onboarding } from './components/Onboarding';
 import { Performance } from './components/Performance';
 import { Procurement } from './components/Procurement';
 import { FinanceAndAdmin } from './components/FinanceAndAdmin';
 import { RiskAssessmentView } from './components/RiskAssessmentView';
-import { ComplianceDocsView } from './components/ComplianceDocsView';
 import { AuditLogsView } from './components/AuditLogsView';
+import { ItemsView } from './components/ItemsView';
+import { PurchaseReceivedView } from './components/PurchaseReceivedView';
+import { BillsView } from './components/BillsView';
+import { BatchPaymentsView } from './components/BatchPaymentsView';
 
 const MONTHLY_SPEND_DATA = [
   { month: 'Jul 25', Spend: 280000 },
@@ -50,7 +52,7 @@ const MONTHLY_SPEND_DATA = [
 ];
 
 const CATEGORY_SPEND_SERIES = [
-  { name: 'IT Services', value: 1450000, fill: '#3B82F6' },
+  { name: 'IT Services', value: 1450000, fill: '#f97316' },
   { name: 'Logistics', value: 890000, fill: '#10B981' },
   { name: 'Raw Materials', value: 1250000, fill: '#F59E0B' },
   { name: 'Consulting', value: 410000, fill: '#8B5CF6' },
@@ -107,7 +109,7 @@ function CountUp({ end, duration = 1500, prefix = '', suffix = '', decimals = 0 
 export default function App() {
   // Master state synchronized across views
   const [db, setDb] = useState(() => generateInitialMockData());
-  const [activePage, setActivePage] = useState<'dashboard' | 'vendors' | 'onboarding' | 'performance' | 'pos' | 'rfq' | 'contracts' | 'invoices' | 'risk' | 'compliance' | 'payments' | 'analytics' | 'users' | 'settings' | 'compare' | 'savings' | 'calendar' | 'esg' | 'audit'>('dashboard');
+  const [activePage, setActivePage] = useState<'dashboard' | 'vendors' | 'performance' | 'pos' | 'invoices' | 'risk' | 'payments' | 'analytics' | 'compare' | 'savings' | 'calendar' | 'audit' | 'items' | 'purchasereceived' | 'bills' | 'batchpayments'>('dashboard');
   
   // Theme state
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -130,7 +132,7 @@ export default function App() {
 
   // Vendor detail drill down state
   const [activeVendorId, setActiveVendorId] = useState<string | null>(null);
-  const [activeVendorTab, setActiveVendorTab] = useState<'Overview' | 'Performance' | 'Contracts' | 'POs' | 'Invoices' | 'Risk' | 'Documents'>('Overview');
+  const [activeVendorTab, setActiveVendorTab] = useState<'Overview' | 'Performance' | 'POs' | 'Invoices' | 'Risk'>('Overview');
 
   // Directory visual filters state
   const [viewType, setViewType] = useState<'table' | 'grid'>('table');
@@ -144,26 +146,11 @@ export default function App() {
   const [showColMenu, setShowColMenu] = useState(false);
 
   // Modals status
-  const [onboardFormOpen, setOnboardFormOpen] = useState(false);
   const [poFormOpen, setPOFormOpen] = useState(false);
-  const [rfqFormOpen, setRfqFormOpen] = useState(false);
-  const [contractFormOpen, setContractFormOpen] = useState(false);
   const [paymentFormOpen, setPaymentFormOpen] = useState(false);
   const [riskAssessmentOpen, setRiskAssessmentOpen] = useState(false);
   const [assessVendorIdState, setAssessVendorIdState] = useState('');
   const [selectedAuditLog, setSelectedAuditLog] = useState<AuditLog | null>(null);
-
-  // Onboarding Stage Form Multi-step State
-  const [onboardStep, setOnboardStep] = useState(1);
-  const [onboardSuccessState, setOnboardSuccessState] = useState(false);
-  const [onboardCompany, setOnboardCompany] = useState('');
-  const [onboardCategory, setOnboardCategory] = useState<Vendor['category']>('IT Services');
-  const [onboardTier, setOnboardTier] = useState<'Tier 1' | 'Tier 2' | 'Tier 3'>('Tier 2');
-  const [onboardCountry, setOnboardCountry] = useState('United States');
-  const [onboardCity, setOnboardCity] = useState('');
-  const [onboardEmail, setOnboardEmail] = useState('');
-  const [onboardTerms, setOnboardTerms] = useState('Net 30');
-  const [onboardCredit, setOnboardCredit] = useState(100000);
 
   // PO Multi Line Form editable items
   const [newPoVendorId, setNewPoVendorId] = useState('');
@@ -233,54 +220,7 @@ export default function App() {
     addToast('Calendar event created successfully', 'success');
   };
 
-  const handleUpdateVendorESG = (vendorId: string, updatedScorecard: ESGScorecardType) => {
-    setDb(prev => {
-      const updatedVendors = prev.vendors.map(v => {
-        if (v.id === vendorId) {
-          return {
-            ...v,
-            esgScore: updatedScorecard.overallScore,
-            esgDetails: {
-              environmental: updatedScorecard.eScore,
-              social: updatedScorecard.sScore,
-              governance: updatedScorecard.gScore
-            }
-          };
-        }
-        return v;
-      });
-      
-      const updatedScorecards = prev.esgScorecards.map(sc => {
-        if (sc.vendorId === vendorId) {
-          return updatedScorecard;
-        }
-        return sc;
-      });
-      
-      if (!updatedScorecards.some(sc => sc.vendorId === vendorId)) {
-        updatedScorecards.push(updatedScorecard);
-      }
-      
-      return {
-        ...prev,
-        vendors: updatedVendors,
-        esgScorecards: updatedScorecards,
-        auditLogs: [{
-          id: `LOG-${Date.now()}`,
-          timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
-          user: 'Alex Mercer',
-          role: 'Procurement Manager',
-          ipAddress: '192.168.1.18',
-          module: 'Risk',
-          action: 'Update',
-          entityId: vendorId,
-          description: `Logged upgraded ESG scorecard parameters for ${updatedScorecard.vendorName}.`,
-          status: 'Success'
-        }, ...prev.auditLogs]
-      };
-    });
-    addToast(`Upgraded ESG compliance ratings successfully`, 'success');
-  };
+
 
   const handleAddSaving = (newSaving: Omit<SavingsInitiative, 'id'>) => {
     const s: SavingsInitiative = {
@@ -310,85 +250,7 @@ export default function App() {
     addToast('Negotiated procurement savings logged', 'success');
   };
 
-  // Onboarding Complete Handle
-  const handleOnboardingSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!onboardCompany || !onboardEmail) {
-      addToast('Please complete all required fields.', 'error');
-      return;
-    }
 
-    const newVnd: Vendor = {
-      id: `VND-0${db.vendors.length + 1}`,
-      name: onboardCompany,
-      category: onboardCategory,
-      tier: onboardTier,
-      countryCode: 'US',
-      country: onboardCountry,
-      countryFlag: '🇺🇸',
-      city: onboardCity || 'San Francisco',
-      address: '22 Century Circle',
-      website: 'https://conglomerate.net',
-      phone: '+1 415-555-1212',
-      email: onboardEmail,
-      taxId: `US${Math.floor(Math.random() * 90000000) + 10000000}`,
-      status: 'Under Review',
-      registeredDate: new Date().toISOString().split('T')[0],
-      contractValue: 120000,
-      description: 'Newly registered vendor in the pipeline awaiting risk audit and certifications collection.',
-      avatarColor: '#2563EB',
-      bankName: 'JPMorgan Chase',
-      branchName: 'HQ Transfer',
-      accountHolder: onboardCompany,
-      accountNumber: 'XXXX3954',
-      routingNumber: '021000021',
-      iban: 'US71JPMC3954',
-      swift: 'JPMCID44',
-      currency: 'USD',
-      creditLimit: onboardCredit,
-      accountsPayableContact: {
-        name: 'Finance Department',
-        email: 'billing@conglomerate.net',
-        phone: '+1 415-555-1212'
-      },
-      riskScore: 42,
-      riskDetails: { financial: 38, operational: 48, compliance: 30, cyber: 44, geopolitical: 50 },
-      esgScore: 68,
-      esgDetails: { environmental: 65, social: 70, governance: 70 },
-      performanceScore: 80,
-      performanceHistory: [{ month: 'Jun 26', score: 80 }],
-      performanceMetrics: { onTimeDelivery: 90, defectRate: 1.5, responseTime: 5, invoiceAccuracy: 95, priceVariance: 0 },
-      totalSpend: 0,
-      activeContracts: 0,
-      posCount: 0,
-      invoiceCount: 0,
-      onboardedDate: new Date().toISOString().split('T')[0],
-      onboardedBy: 'Alex Mercer',
-      primaryContact: { firstName: 'Robert', lastName: 'Chen', jobTitle: 'Sales Lead', email: onboardEmail, phone: '+1-415-555-1212', department: 'Enterprise Accounts' },
-      paymentTerms: onboardTerms,
-      bankInfo: { bankName: 'JPMorgan Chase', branchName: 'HQ transfer', accountHolder: onboardCompany, accountNumber: 'XXXX3954', routingNumber: '021000021', iban: 'US71JPMC3954', swift: 'JPMCID44', currency: 'USD' }
-    };
-
-    setDb(prev => ({
-      ...prev,
-      vendors: [newVnd, ...prev.vendors],
-      auditLogs: [{
-        id: `LOG-${Date.now()}`,
-        timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
-        user: 'Alex Mercer',
-        role: 'Procurement Manager',
-        ipAddress: '192.168.1.1',
-        module: 'Vendors',
-        action: 'Create',
-        entityId: newVnd.id,
-        description: `Successfully onboarded new vendor conglomerate: ${newVnd.name}.`,
-        status: 'Success'
-      }, ...prev.auditLogs]
-    }));
-
-    setOnboardSuccessState(true);
-    addToast('Onboarding application filed successfully!', 'success');
-  };
 
   const handleCreatePO = (e: React.FormEvent) => {
     e.preventDefault();
@@ -415,7 +277,7 @@ export default function App() {
     const newPO: PurchaseOrder = {
       id: `PO-2024-0${db.pos.length + 1}`,
       vendorId: newPoVendorId,
-      vendorName: vndObj?.name || 'Sovereign Partners',
+      vendorName: vndObj?.name || 'Amit Alliance',
       category: vndObj?.category || 'IT Services',
       title: `Procurement for ${vndObj?.category || "IT Supplies"}`,
       itemsCount: newPoItems.length,
@@ -559,68 +421,6 @@ export default function App() {
     addToast(`Purchase Order ${id} status updated to ${status}`, 'success');
   };
 
-  const handleAddContract = (c: Contract) => {
-    setDb(prev => ({
-      ...prev,
-      contracts: [c, ...prev.contracts],
-      auditLogs: [{
-        id: `LOG-${Date.now()}`,
-        timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
-        user: 'Alex Mercer',
-        role: 'Procurement Manager',
-        ipAddress: '192.168.1.3',
-        module: 'Contracts',
-        action: 'Create',
-        entityId: c.id,
-        description: `Created new contract ${c.id} for ${c.vendorName} worth $${c.value.toLocaleString()}.`,
-        status: 'Success'
-      }, ...prev.auditLogs]
-    }));
-    addToast(`Contract ${c.id} added successfully`, 'success');
-  };
-
-  const handleInviteUser = (u: User) => {
-    setDb(prev => ({
-      ...prev,
-      users: [u, ...prev.users],
-      auditLogs: [{
-        id: `LOG-${Date.now()}`,
-        timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
-        user: 'Alex Mercer',
-        role: 'Procurement Manager',
-        ipAddress: '192.168.1.4',
-        module: 'Users',
-        action: 'Create',
-        entityId: u.id,
-        description: `Invited user ${u.name} (${u.email}) as ${u.role}.`,
-        status: 'Success'
-      }, ...prev.auditLogs]
-    }));
-    addToast(`Invited user ${u.name} successfully`, 'success');
-  };
-
-  const handleDeleteUser = (email: string) => {
-    setDb(prev => {
-      const targetUser = prev.users.find(u => u.email === email);
-      return {
-        ...prev,
-        users: prev.users.filter(u => u.email !== email),
-        auditLogs: [{
-          id: `LOG-${Date.now()}`,
-          timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
-          user: 'Alex Mercer',
-          role: 'Procurement Manager',
-          ipAddress: '192.168.1.4',
-          module: 'Users',
-          action: 'Delete',
-          entityId: targetUser?.id || email,
-          description: `Deleted/revoked access for user ${targetUser?.name || email}.`,
-          status: 'Success'
-        }, ...prev.auditLogs]
-      };
-    });
-    addToast(`Deleted user account`, 'info');
-  };
 
   const handleAddRiskAssessment = (ra: RiskAssessment) => {
     setDb(prev => {
@@ -662,51 +462,6 @@ export default function App() {
     addToast(`Risk assessment for ${ra.vendorName} created.`, 'success');
   };
 
-  const handleAddComplianceDoc = (doc: ComplianceDoc) => {
-    setDb(prev => ({
-      ...prev,
-      complianceDocs: [doc, ...prev.complianceDocs],
-      auditLogs: [{
-        id: `LOG-${Date.now()}`,
-        timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
-        user: 'Alex Mercer',
-        role: 'Procurement Manager',
-        ipAddress: '192.168.1.18',
-        module: 'System',
-        action: 'Create',
-        entityId: doc.id,
-        description: `Registered compliance certificate: ${doc.name} under Category: ${doc.category}.`,
-        status: 'Success'
-      }, ...prev.auditLogs]
-    }));
-  };
-
-  const handleFlagComplianceDoc = (id: string) => {
-    setDb(prev => {
-      const updatedDocs = prev.complianceDocs.map(d => {
-        if (d.id === id) {
-          return { ...d, notes: `${d.notes ? d.notes + ' ' : ''}[FLAGGED] Document marked for audit discrepancy review.` };
-        }
-        return d;
-      });
-      return {
-        ...prev,
-        complianceDocs: updatedDocs,
-        auditLogs: [{
-          id: `LOG-${Date.now()}`,
-          timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
-          user: 'Alex Mercer',
-          role: 'Procurement Manager',
-          ipAddress: '192.168.1.18',
-          module: 'System',
-          action: 'Update',
-          entityId: id,
-          description: `Discrepancy flag raised on document ID ${id}. Routed to legal review queues.`,
-          status: 'Success'
-        }, ...prev.auditLogs]
-      };
-    });
-  };
 
   const handleBulkStatusChange = (status: Vendor['status']) => {
     if (selectedVendors.length === 0) return;
@@ -726,8 +481,6 @@ export default function App() {
     setCmdKOpen(false);
     if (action === 'navigate') {
       setActivePage(arg as any);
-    } else if (action === 'onboard') {
-      setOnboardFormOpen(true);
     } else if (action === 'po') {
       setPOFormOpen(true);
     } else if (action === 'assess') {
@@ -748,10 +501,13 @@ export default function App() {
       { t: 'Dashboard Overview', p: 'dashboard' },
       { t: 'Vendor Directory Registry', p: 'vendors' },
       { t: 'Savings Tracker Ledger', p: 'savings' },
-      { t: 'ESG Compliance Scorecards', p: 'esg' },
       { t: 'Dynamic Operational Calendar', p: 'calendar' },
       { t: 'Purchase Orders Overview', p: 'pos' },
-      { t: 'Risk Heatmatics Metrics', p: 'risk' }
+      { t: 'Risk Heatmatics Metrics', p: 'risk' },
+      { t: 'Items Registry Master', p: 'items' },
+      { t: 'Purchase Received Warehousing', p: 'purchasereceived' },
+      { t: 'Bills Accounts Payable', p: 'bills' },
+      { t: 'Batch Payments Disbursement', p: 'batchpayments' }
     ];
     pages.forEach(pg => {
       if (pg.t.toLowerCase().includes(query)) {
@@ -790,7 +546,6 @@ export default function App() {
       items: [
         { name: 'Vendor Directory', icon: Building2, page: 'vendors' as const },
         { name: 'Compare Vendors', icon: GitCompare, page: 'compare' as const },
-        { name: 'Onboarding Stage', icon: UserPlus, page: 'onboarding' as const },
         { name: 'Performance Score', icon: BarChart3, page: 'performance' as const },
       ]
     },
@@ -798,17 +553,15 @@ export default function App() {
       group: 'PROCUREMENT',
       items: [
         { name: 'Purchase Orders', icon: ShoppingCart, page: 'pos' as const },
-        { name: 'RFQ / Sourcing', icon: FileSearch, page: 'rfq' as const },
-        { name: 'Contracts Master', icon: FileText, page: 'contracts' as const },
         { name: 'Invoices Processing', icon: Receipt, page: 'invoices' as const },
+        { name: 'Items Registry', icon: Package, page: 'items' as const },
+        { name: 'Purchase Received', icon: PackageCheck, page: 'purchasereceived' as const },
       ]
     },
     {
       group: 'COMPLIANCE & RISK',
       items: [
         { name: 'Risk Assessment', icon: ShieldAlert, page: 'risk' as const },
-        { name: 'Compliance Docs', icon: FolderLock, page: 'compliance' as const },
-        { name: 'ESG Scorecard', icon: Leaf, page: 'esg' as const },
         { name: 'Audit Logs', icon: ClipboardList, page: 'audit' as const }
       ]
     },
@@ -816,15 +569,10 @@ export default function App() {
       group: 'FINANCE',
       items: [
         { name: 'Payments Ledger', icon: Wallet, page: 'payments' as const },
+        { name: 'Bills Ledger', icon: FileSpreadsheet, page: 'bills' as const },
+        { name: 'Batch Payments', icon: Layers, page: 'batchpayments' as const },
         { name: 'Spend Analytics', icon: TrendingUp, page: 'analytics' as const },
         { name: 'Savings Tracker', icon: PiggyBank, page: 'savings' as const },
-      ]
-    },
-    {
-      group: 'ADMINISTRATION',
-      items: [
-        { name: 'User Management', icon: Users, page: 'users' as const },
-        { name: 'System Settings', icon: Settings, page: 'settings' as const }
       ]
     }
   ];
@@ -835,7 +583,7 @@ export default function App() {
     db.vendors.forEach(v => {
       dist[v.category] = (dist[v.category] || 0) + 1;
     });
-    const colors = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6', '#EF4444', '#06B6D4', '#84CC16', '#A855F7'];
+    const colors = ['#f97316', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6', '#EF4444', '#06B6D4', '#84CC16', '#A855F7'];
     return Object.keys(dist).map((cat, idx) => ({
       name: cat,
       value: dist[cat],
@@ -897,15 +645,15 @@ export default function App() {
         <div className="p-6 border-b border-[#1E293B]">
           <div className="logo-container">
             <div className="logo-sphere">
-              <svg className="w-5.5 h-5.5 text-blue-600 dark:text-amber-500 logo-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg className="w-5.5 h-5.5 text-orange-600 dark:text-orange-400 logo-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 2L2 7l10 5 10-5-10-5z" className="logo-layer-1" />
                 <path d="M2 17l10 5 10-5" className="logo-layer-2" />
                 <path d="M2 12l10 5 10-5" className="logo-layer-3" />
               </svg>
             </div>
             <div>
-              <h2 className="logo-title">VendorFlow</h2>
-              <p className="logo-subtitle">Enterprise Console</p>
+              <h2 className="logo-title">Amit Alliance</h2>
+              <p className="logo-subtitle text-orange-600 dark:text-orange-400">Enterprise Console</p>
             </div>
           </div>
         </div>
@@ -914,7 +662,7 @@ export default function App() {
         <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
           {navGroups.map((gp, gIdx) => (
             <div key={gIdx} className="space-y-2">
-              <p className="text-[9px] font-black tracking-widest text-[#475569] dark:text-[#334155] uppercase px-3">
+              <p className="text-[9px] font-black tracking-widest text-[#111827] dark:text-[#F1F5F9] uppercase px-3">
                 {gp.group}
               </p>
               <ul className="space-y-0.5">
@@ -929,11 +677,11 @@ export default function App() {
                         }}
                         className={`w-full h-9 flex items-center gap-3 px-3 rounded text-xs transition duration-150 font-medium ${
                           isActive 
-                            ? 'bg-blue-600 dark:bg-blue-700 text-white font-bold' 
-                            : 'text-gray-300 hover:bg-[#1E293B]/60 dark:hover:bg-[#1E293B]/40 hover:text-white'
+                            ? 'bg-orange-600 dark:bg-orange-700 text-white font-bold' 
+                            : 'text-orange-600 dark:text-orange-400 hover:bg-orange-600/10 hover:text-orange-700 dark:hover:text-orange-300'
                         }`}
                       >
-                        <it.icon size={15} className={isActive ? 'text-white' : 'text-slate-450'} />
+                        <it.icon size={15} className={isActive ? 'text-white' : 'text-orange-600 dark:text-orange-400'} />
                         <span className="truncate">{it.name}</span>
                       </button>
                     </li>
@@ -947,17 +695,17 @@ export default function App() {
         {/* Sidebar Footer User detail */}
         <div className="p-4 border-t border-gray-200 dark:border-gray-800 bg-transparent flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center font-extrabold text-white text-xs">
+            <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center font-extrabold text-white text-xs">
                AM
             </div>
             <div>
-              <h4 className="text-xs font-bold text-gray-800 dark:text-white">Alex Mercer</h4>
-              <p className="text-[10px] text-gray-500 dark:text-gray-400">HQ Admin Authority</p>
+              <h4 className="text-xs font-bold text-orange-600 dark:text-orange-400">Alex Mercer</h4>
+              <p className="text-[10px] text-orange-500/80 dark:text-orange-500/60">HQ Admin Authority</p>
             </div>
           </div>
           <button 
             onClick={() => addToast('Authorized secure lockout triggered', 'info')}
-            className="text-gray-500 hover:text-gray-800 dark:text-gray-450 dark:hover:text-white transition p-1"
+            className="text-orange-600 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300 transition p-1"
           >
             <X size={14} className="opacity-70 rotate-45" />
           </button>
@@ -976,7 +724,7 @@ export default function App() {
               {activePage.replace('-', ' ')}
             </h1>
             <span className="text-xs text-gray-400 hidden sm:inline">|</span>
-            <span className="text-[10px] font-bold text-gray-400 uppercase hidden sm:inline">
+            <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase hidden sm:inline">
               VMS Consolidation / Active session
             </span>
           </div>
@@ -1021,7 +769,7 @@ export default function App() {
             {/* User profile capsule display */}
             <div className="flex items-center gap-2 text-xs">
               <span className="font-bold hidden lg:inline">Alex Mercer</span>
-              <span className="bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-350 px-2 py-0.5 rounded text-[10px] font-bold">
+              <span className="bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-350 px-2 py-0.5 rounded text-[10px] font-bold">
                 Manager Authority
               </span>
             </div>
@@ -1033,8 +781,136 @@ export default function App() {
         {/* CONTAINER CONTENT ROUTING */}
         <div className="flex-1 overflow-hidden relative flex flex-col">
           
-          {/* Active Vendor Detail screen drills-down (OVERLAYS ALL PAGES ON MATCH) */}
-          {activeVendorId && activeVendorRecord ? (
+          {poFormOpen ? (
+            <div className="flex-1 p-8 overflow-y-auto w-full bg-[#F4F5F7] dark:bg-[#0D1117] text-[#111827] dark:text-[#F1F5F9] transition-colors duration-200 animate-in slide-in-from-bottom-6">
+              {/* FORM HEADER */}
+              <div className="flex items-center gap-4 mb-8 border-b pb-4 border-gray-200 dark:border-gray-800">
+                <button
+                  onClick={() => setPOFormOpen(false)}
+                  className="p-2 hover:bg-gray-200 dark:hover:bg-slate-800 rounded-full transition text-gray-600 dark:text-gray-300"
+                >
+                  <ArrowLeft size={18} />
+                </button>
+                <div>
+                  <span className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest font-roboto">Global Purchase Order Drafting</span>
+                  <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white uppercase font-roboto flex items-center gap-2">
+                    <ShoppingCart className="text-green-600" /> Create Purchase Order Line Draft
+                  </h1>
+                </div>
+              </div>
+
+              {/* FORM BOX */}
+              <div className="bg-white dark:bg-[#161B27] border border-gray-200 dark:border-gray-800 rounded-xl shadow-xl p-8 max-w-4xl">
+                <form onSubmit={handleCreatePO} className="space-y-6">
+                  <div className="space-y-1">
+                    <label className="block text-xs font-semibold text-gray-500 mb-1 font-sans">Target Vendor Supplier Partner *</label>
+                    <select 
+                      required
+                      value={newPoVendorId}
+                      onChange={(e) => setNewPoVendorId(e.target.value)}
+                      className="w-full bg-transparent border border-gray-300 dark:border-gray-700 rounded px-3 py-2 text-xs outline-none focus:border-green-500"
+                    >
+                      <option value="">Choose Supplier...</option>
+                      {db.vendors.map(v => (
+                        <option key={v.id} value={v.id}>{v.name} ({v.id})</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Editable Multi line table items fields */}
+                  <div>
+                    <span className="block text-gray-400 font-bold uppercase text-[10px] mb-3 tracking-widest font-roboto">Purchase Line Item Details</span>
+                    <div className="space-y-4">
+                      {newPoItems.map((itm, idx) => (
+                        <div key={idx} className="grid grid-cols-4 gap-4 items-center">
+                          <div>
+                            <label className="block text-[10px] text-gray-400 font-semibold mb-1">Item Code</label>
+                            <input 
+                              type="text" 
+                              placeholder="Code (e.g. PRD-102)"
+                              value={itm.code}
+                              onChange={(e) => {
+                                const next = [...newPoItems];
+                                next[idx].code = e.target.value;
+                                setNewPoItems(next);
+                              }}
+                              className="w-full bg-transparent border border-gray-300 dark:border-gray-700 rounded px-3 py-2 text-xs outline-none focus:border-green-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] text-gray-400 font-semibold mb-1">Description</label>
+                            <input 
+                              type="text" 
+                              placeholder="Description details"
+                              value={itm.desc}
+                              onChange={(e) => {
+                                const next = [...newPoItems];
+                                next[idx].desc = e.target.value;
+                                setNewPoItems(next);
+                              }}
+                              className="w-full bg-transparent border border-gray-300 dark:border-gray-700 rounded px-3 py-2 text-xs outline-none focus:border-green-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] text-gray-400 font-semibold mb-1">Quantity</label>
+                            <input 
+                              type="number" 
+                              placeholder="Quantity"
+                              value={itm.qty}
+                              onChange={(e) => {
+                                const next = [...newPoItems];
+                                next[idx].qty = parseInt(e.target.value) || 0;
+                                setNewPoItems(next);
+                              }}
+                              className="w-full bg-transparent border border-gray-300 dark:border-gray-700 rounded px-3 py-2 text-xs outline-none focus:border-green-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] text-gray-400 font-semibold mb-1">Unit Cost ($)</label>
+                            <input 
+                              type="number" 
+                              placeholder="Unit cost ($)"
+                              value={itm.price}
+                              onChange={(e) => {
+                                const next = [...newPoItems];
+                                next[idx].price = parseFloat(e.target.value) || 0;
+                                setNewPoItems(next);
+                              }}
+                              className="w-full bg-transparent border border-gray-300 dark:border-gray-700 rounded px-3 py-2 text-xs outline-none focus:border-green-500"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <button 
+                      type="button"
+                      onClick={() => setNewPoItems(prev => [...prev, { code: 'PRD-100', desc: 'Hardware extra Consolidation pack', qty: 1, price: 100 }])}
+                      className="text-orange-600 hover:underline font-bold mt-4 inline-block text-xs"
+                    >
+                      + Add Line Item Field Row
+                    </button>
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-6 border-t border-gray-250 dark:border-gray-800">
+                    <button 
+                      type="button" 
+                      onClick={() => setPOFormOpen(false)}
+                      className="px-4 py-2 border border-gray-350 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-slate-800 rounded font-semibold text-xs text-gray-500 transition"
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      type="submit" 
+                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-bold text-xs rounded shadow transition animate-pulse"
+                    >
+                      Seal PO line
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          ) : activeVendorId && activeVendorRecord ? (
             <div className="flex-1 flex overflow-hidden bg-[#F4F5F7] dark:bg-[#0D1117] text-[#111827] dark:text-[#F1F5F9] animate-in slide-in-from-bottom-6 duration-200">
               
               {/* Left sidebar card of vendor */}
@@ -1042,11 +918,11 @@ export default function App() {
                 <div>
                   <button 
                     onClick={() => setActiveVendorId(null)}
-                    className="text-xs text-blue-600 hover:underline font-bold mb-4 flex items-center gap-1"
+                    className="text-xs text-orange-600 hover:underline font-bold mb-4 flex items-center gap-1"
                   >
                     ← Back to List
                   </button>
-                  <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 text-blue-700 text-xl font-bold rounded-full flex items-center justify-center mb-4 shadow">
+                  <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-orange-700 text-xl font-bold rounded-full flex items-center justify-center mb-4 shadow">
                     {activeVendorRecord.name.charAt(0)}
                   </div>
                   <h2 className="font-roboto font-black text-lg tracking-tight leading-tight">{activeVendorRecord.name}</h2>
@@ -1068,7 +944,7 @@ export default function App() {
                   </div>
                   <div className="flex justify-between items-center border-b border-gray-100 dark:border-gray-800 pb-2">
                     <span className="text-gray-400">Registered Email:</span>
-                    <span className="font-semibold text-blue-600 block max-w-[150px] truncate" title={activeVendorRecord.email}>{activeVendorRecord.email}</span>
+                    <span className="font-semibold text-orange-600 block max-w-[150px] truncate" title={activeVendorRecord.email}>{activeVendorRecord.email}</span>
                   </div>
                 </div>
 
@@ -1088,13 +964,13 @@ export default function App() {
               {/* Main detailed tabs pane */}
               <div className="flex-1 flex flex-col overflow-hidden">
                 <div className="bg-white dark:bg-[#111827] border-b border-gray-250 dark:border-gray-800 px-8 flex items-center gap-6 overflow-x-auto shrink-0">
-                  {['Overview', 'Performance', 'Contracts', 'POs', 'Invoices', 'Risk', 'Documents'].map((tab) => (
+                  {['Overview', 'Performance', 'POs', 'Invoices', 'Risk'].map((tab) => (
                     <button
                       key={tab}
                       onClick={() => setActiveVendorTab(tab as any)}
                       className={`h-12 border-b-2 text-xs font-semibold px-2 transition ${
                         activeVendorTab === tab 
-                          ? 'border-blue-600 text-blue-600 font-bold' 
+                          ? 'border-orange-600 text-orange-600 font-bold' 
                           : 'border-transparent text-gray-500 hover:text-gray-800'
                       }`}
                     >
@@ -1157,40 +1033,12 @@ export default function App() {
                             <XAxis dataKey="month" />
                             <YAxis domain={[50, 100]} />
                             <Tooltip />
-                            <Area type="monotone" dataKey="score" stroke="#2563EB" fill="#EFF6FF" fillOpacity={0.4} />
+                            <Area type="monotone" dataKey="score" stroke="#ea580c" fill="#fff7ed" fillOpacity={0.4} />
                           </AreaChart>
                         </ResponsiveContainer>
                       </div>
                     </div>
-                  )}
-
-                  {/* TAB: CONTRACTS */}
-                  {activeVendorTab === 'Contracts' && (
-                    <div className="bg-white dark:bg-[#161B27] rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
-                      <table className="w-full text-left text-xs">
-                        <thead>
-                          <tr className="bg-gray-100/30 dark:bg-gray-800/10 border-b border-gray-200 dark:border-gray-800 font-bold uppercase tracking-widest text-[10px]">
-                            <th className="p-4">Contract ID</th>
-                            <th className="p-4">Title</th>
-                            <th className="p-4">Agreement Type</th>
-                            <th className="p-4 text-right">Value Amount</th>
-                            <th className="p-4 text-right">End Date</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {db.contracts.filter(c => c.vendorId === activeVendorId).map(c => (
-                            <tr key={c.id}>
-                              <td className="p-4 font-bold text-gray-850 dark:text-gray-200">{c.id}</td>
-                              <td className="p-4">{c.title}</td>
-                              <td className="p-4"><span className="bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded text-[10px]">{c.type}</span></td>
-                              <td className="p-4 text-right font-semibold">${c.value.toLocaleString()}</td>
-                              <td className="p-4 text-right text-gray-400">{c.endDate}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
+                   )}
 
                   {/* TAB: PO LIST */}
                   {activeVendorTab === 'POs' && (
@@ -1210,7 +1058,7 @@ export default function App() {
                               <td className="p-4 font-bold">{po.id}</td>
                               <td className="p-4">{po.createdDate}</td>
                               <td className="p-4">
-                                <span className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded text-[10px] font-bold">{po.status}</span>
+                                <span className="bg-orange-50 text-orange-700 px-1.5 py-0.5 rounded text-[10px] font-bold">{po.status}</span>
                               </td>
                               <td className="p-4 text-right font-black">${po.poValue.toLocaleString()}</td>
                             </tr>
@@ -1341,7 +1189,7 @@ export default function App() {
                             <XAxis dataKey="month" stroke={theme === 'dark' ? '#94A3B8' : '#6B7280'} />
                             <YAxis stroke={theme === 'dark' ? '#94A3B8' : '#6B7280'} fontSize={10} />
                             <Tooltip />
-                            <Area type="monotone" dataKey="Spend" stroke="#2563EB" fill="#EFF6FF" fillOpacity={0.4} />
+                            <Area type="monotone" dataKey="Spend" stroke="#ea580c" fill="#fff7ed" fillOpacity={0.4} />
                           </AreaChart>
                         </ResponsiveContainer>
                       </div>
@@ -1375,10 +1223,10 @@ export default function App() {
 
                   </div>
 
-                  {/* Dynamic Metrics: Radar (Web) Chart and Activity Heatmap */}
+                  {/* Dynamic Metrics: Radar (Web) Chart */}
                   <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
                     {/* Radar (Web) Chart */}
-                    <div className="lg:col-span-2 bg-white dark:bg-[#161B27] p-6 rounded-lg border border-gray-250 dark:border-gray-800 shadow-sm">
+                    <div className="lg:col-span-5 bg-white dark:bg-[#161B27] p-6 rounded-lg border border-gray-250 dark:border-gray-800 shadow-sm">
                       <div className="flex justify-between items-center mb-4 border-b border-gray-150 dark:border-gray-800 pb-2">
                         <h4 className="font-roboto font-bold text-sm tracking-tight text-neo-primary">Strategic Category Balance</h4>
                         <span className="text-[10px] bg-neo-base shadow-neo-badge text-neo-muted px-2 py-0.5 rounded font-black">Radar Evaluation</span>
@@ -1397,71 +1245,10 @@ export default function App() {
                         </ResponsiveContainer>
                       </div>
                     </div>
-
-                    {/* GitHub-like Contribution Heatmap */}
-                    <div className="lg:col-span-3 bg-white dark:bg-[#161B27] p-6 rounded-lg border border-gray-250 dark:border-gray-800 shadow-sm flex flex-col justify-between">
-                      <div className="flex justify-between items-center mb-4 border-b border-gray-150 dark:border-gray-800 pb-2">
-                        <h4 className="font-roboto font-bold text-sm tracking-tight text-neo-primary">Continuous Integration Activity Logs</h4>
-                        <span className="text-[10px] bg-neo-base shadow-neo-badge text-neo-muted px-2 py-0.5 rounded font-black">20-Week Rolling</span>
-                      </div>
-                      
-                      <div className="flex-1 flex flex-col justify-center space-y-4">
-                        <div className="flex items-start gap-4">
-                          {/* Weekday labels */}
-                          <div className="grid grid-rows-7 gap-2 text-[9px] font-black text-neo-muted uppercase pt-1 shrink-0">
-                            <span>Sun</span>
-                            <span>Mon</span>
-                            <span>Tue</span>
-                            <span>Wed</span>
-                            <span>Thu</span>
-                            <span>Fri</span>
-                            <span>Sat</span>
-                          </div>
-                          
-                          {/* Heatmap Grid */}
-                          <div className="flex-1 overflow-x-auto">
-                            <div className="grid grid-flow-col grid-rows-7 gap-2 pb-2 min-w-[380px]">
-                              {heatmapData.map((day, idx) => {
-                                let bgClass = 'bg-neo-base shadow-neo-input';
-                                if (day.count > 0) {
-                                  if (day.count <= 2) bgClass = 'bg-neo-accent/20 shadow-neo-badge border border-neo-accent/30';
-                                  else if (day.count <= 4) bgClass = 'bg-neo-accent/40 shadow-neo-badge border border-neo-accent/50';
-                                  else if (day.count <= 6) bgClass = 'bg-neo-accent/70 shadow-neo-badge text-neo-on-accent';
-                                  else bgClass = 'bg-neo-accent shadow-neo-badge text-neo-on-accent';
-                                }
-                                
-                                return (
-                                  <div 
-                                    key={idx}
-                                    className={`w-3.5 h-3.5 rounded-[3px] transition-all duration-150 hover:scale-125 cursor-pointer ${bgClass}`}
-                                    title={`${day.dateStr}: ${day.count} database operations`}
-                                  />
-                                );
-                              })}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Legends */}
-                        <div className="flex justify-between items-center text-[10px] font-bold text-neo-muted border-t border-gray-200 dark:border-gray-800/60 pt-4">
-                          <span>Operations count from dynamically loaded logs</span>
-                          <div className="flex items-center gap-1.5 font-sans">
-                            <span>Less</span>
-                            <div className="w-3.5 h-3.5 rounded-[3px] bg-neo-base shadow-neo-input" />
-                            <div className="w-3.5 h-3.5 rounded-[3px] bg-neo-accent/20 shadow-neo-badge" />
-                            <div className="w-3.5 h-3.5 rounded-[3px] bg-neo-accent/40 shadow-neo-badge" />
-                            <div className="w-3.5 h-3.5 rounded-[3px] bg-neo-accent/70 shadow-neo-badge" />
-                            <div className="w-3.5 h-3.5 rounded-[3px] bg-neo-accent shadow-neo-badge" />
-                            <span>More</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
                   </div>
 
                   {/* Operational checklists table & logs widgets */}
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     
                     {/* Top performing vendors list */}
                     <div className="bg-white dark:bg-[#161B27] p-6 rounded-lg border border-gray-250 dark:border-gray-800 shadow-sm flex flex-col justify-between">
@@ -1486,25 +1273,6 @@ export default function App() {
                             <p className="font-serif italic text-gray-800 dark:text-gray-250">{log.description}</p>
                           </div>
                         ))}
-                      </div>
-                    </div>
-
-                    {/* Quick action checklist panel */}
-                    <div className="bg-white dark:bg-[#161B27] p-6 rounded-lg border border-gray-250 dark:border-gray-800 shadow-sm">
-                      <h4 className="font-roboto font-bold text-xs uppercase tracking-widest text-[#111827] dark:text-white mb-3">SaaS Action Modules</h4>
-                      <div className="grid grid-cols-2 gap-3 text-center">
-                        <button 
-                          onClick={() => setOnboardFormOpen(true)}
-                          className="p-3 border border-blue-200 dark:border-blue-900/40 rounded hover:bg-blue-50 dark:hover:bg-slate-800 text-xs flex flex-col items-center gap-1 font-bold text-blue-750 dark:text-blue-350"
-                        >
-                          <UserPlus size={16} /> Use Onboarding
-                        </button>
-                        <button 
-                          onClick={() => setPOFormOpen(true)}
-                          className="p-3 border border-green-200 dark:border-green-900/40 rounded hover:bg-green-50 dark:hover:bg-slate-800 text-xs flex flex-col items-center gap-1 font-bold text-green-750 dark:text-green-350"
-                        >
-                          <ShoppingCart size={16} /> Log PO
-                        </button>
                       </div>
                     </div>
 
@@ -1565,12 +1333,6 @@ export default function App() {
                       </button>
                     </div>
 
-                    <button 
-                      onClick={() => setOnboardFormOpen(true)}
-                      className="bg-blue-600 hover:bg-blue-750 text-white font-bold text-xs px-4 py-2 rounded shadow"
-                    >
-                      + Onboard New Vendor
-                    </button>
                   </div>
 
                   {/* Standard Main Directory Listing */}
@@ -1596,7 +1358,7 @@ export default function App() {
                             })
                             .map(v => (
                               <tr key={v.id} className="hover:bg-gray-55/40 dark:hover:bg-[#1C2030]/20">
-                                <td className="p-4 font-bold text-blue-600 cursor-pointer" onClick={() => setActiveVendorId(v.id)}>
+                                <td className="p-4 font-bold text-orange-600 cursor-pointer" onClick={() => setActiveVendorId(v.id)}>
                                   {v.id}
                                 </td>
                                 <td className="p-4 font-bold text-[#111827] dark:text-white" onClick={() => setActiveVendorId(v.id)}>
@@ -1616,7 +1378,7 @@ export default function App() {
                                 <td className="p-4 text-center">
                                   <button 
                                     onClick={() => setActiveVendorId(v.id)}
-                                    className="text-blue-600 dark:text-blue-400 font-black hover:underline"
+                                    className="text-orange-600 dark:text-orange-400 font-black hover:underline"
                                   >
                                     Review Profile
                                   </button>
@@ -1657,32 +1419,11 @@ export default function App() {
                 />
               )}
 
-              {/* ROUTE: ESG SCORECARD */}
-              {activePage === 'esg' && (
-                <ESGScorecard 
-                  vendors={db.vendors}
-                  esgScorecards={db.esgScorecards}
-                  onUpdateVendorESG={handleUpdateVendorESG}
-                  dark={theme === 'dark'}
-                />
-              )}
-
-              {/* ROUTE: VENDOR ONBOARDING */}
-              {activePage === 'onboarding' && (
-                <Onboarding
-                  vendors={db.vendors}
-                  isDark={theme === 'dark'}
-                  onAddVendor={handleAddVendor}
-                />
-              )}
-
               {/* ROUTE: PERFORMANCE */}
               {activePage === 'performance' && (
                 <Performance
                   vendors={db.vendors}
-                  scorecards={db.esgScorecards}
                   isDark={theme === 'dark'}
-                  onUpdateScorecard={(sc) => handleUpdateVendorESG(sc.vendorId, sc)}
                   onNavigateToDetail={(vendorId) => {
                     setActivePage('vendors');
                     setActiveVendorId(vendorId);
@@ -1690,31 +1431,26 @@ export default function App() {
                 />
               )}
 
-              {/* ROUTE: PROCUREMENT (PO, RFQ, CONTRACTS, INVOICES) */}
-              {['pos', 'rfq', 'contracts', 'invoices'].includes(activePage) && (
+              {/* ROUTE: PROCUREMENT (PO, INVOICES) */}
+              {['pos', 'invoices'].includes(activePage) && (
                 <Procurement
                   vendors={db.vendors}
                   purchaseOrders={db.pos}
-                  contracts={db.contracts}
                   invoices={db.invoices}
                   isDark={theme === 'dark'}
                   onAddPO={handleAddPOObj}
                   onUpdatePOStatus={handleUpdatePOStatus}
-                  onAddContract={handleAddContract}
-                  initialTab={activePage === 'rfq' ? 'rfqs' : activePage as any}
+                  initialTab={activePage as any}
                 />
               )}
 
-              {/* ROUTE: FINANCE & ADMIN (PAYMENTS, SPEND, USERS) */}
-              {['payments', 'analytics', 'users'].includes(activePage) && (
+              {/* ROUTE: FINANCE & ADMIN (PAYMENTS, SPEND) */}
+              {['payments', 'analytics'].includes(activePage) && (
                 <FinanceAndAdmin
                   vendors={db.vendors}
                   savings={db.savings}
                   logs={db.auditLogs}
-                  users={db.users}
                   isDark={theme === 'dark'}
-                  onInviteUser={handleInviteUser}
-                  onDeleteUser={handleDeleteUser}
                   initialTab={activePage === 'analytics' ? 'spend' : activePage as any}
                 />
               )}
@@ -1733,17 +1469,6 @@ export default function App() {
                 />
               )}
 
-              {/* ROUTE: COMPLIANCE DOCUMENTS */}
-              {activePage === 'compliance' && (
-                <ComplianceDocsView
-                  vendors={db.vendors}
-                  documents={db.complianceDocs}
-                  isDark={theme === 'dark'}
-                  onAddDocument={handleAddComplianceDoc}
-                  onFlagDocument={handleFlagComplianceDoc}
-                />
-              )}
-
               {/* ROUTE: AUDIT LOGS */}
               {activePage === 'audit' && (
                 <AuditLogsView
@@ -1752,107 +1477,45 @@ export default function App() {
                 />
               )}
 
-              {/* ROUTE: SYSTEM SETTINGS */}
-              {activePage === 'settings' && (
-                <div className="flex-1 p-8 overflow-y-auto space-y-6">
-                  <div>
-                    <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest font-roboto">System Settings & Configuration</span>
-                    <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white uppercase font-roboto">Global Configurations</h1>
-                  </div>
+              {/* ROUTE: ITEMS */}
+              {activePage === 'items' && (
+                <ItemsView
+                  vendors={db.vendors}
+                  isDark={theme === 'dark'}
+                />
+              )}
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* General Settings */}
-                    <div className="bg-neo-base shadow-neo-card rounded-[16px] p-6 space-y-4">
-                      <h3 className="text-sm font-bold uppercase tracking-wider text-neo-primary border-b border-gray-300 dark:border-gray-800 pb-2">General Settings</h3>
-                      <div className="space-y-3">
-                        <div>
-                          <label className="block text-xs font-semibold text-neo-secondary mb-1">Company Name</label>
-                          <input type="text" className="w-full bg-neo-base shadow-neo-input border-0 rounded-[12px] h-[38px] px-3 text-xs text-neo-primary focus:shadow-neo-input-focus outline-none" defaultValue="VendorFlow Corp." />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-neo-secondary mb-1">Fiscal Year Start</label>
-                          <select className="w-full bg-neo-base shadow-neo-input border-0 rounded-[12px] h-[38px] px-3 text-xs text-neo-primary focus:shadow-neo-input-focus outline-none">
-                            <option>January 1st</option>
-                            <option>April 1st</option>
-                            <option>July 1st</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-neo-secondary mb-1">Default Currency</label>
-                          <select className="w-full bg-neo-base shadow-neo-input border-0 rounded-[12px] h-[38px] px-3 text-xs text-neo-primary focus:shadow-neo-input-focus outline-none">
-                            <option>USD ($)</option>
-                            <option>EUR (€)</option>
-                            <option>GBP (£)</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
+              {/* ROUTE: PURCHASE RECEIVED */}
+              {activePage === 'purchasereceived' && (
+                <PurchaseReceivedView
+                  vendors={db.vendors}
+                  purchaseOrders={db.pos}
+                  isDark={theme === 'dark'}
+                />
+              )}
 
-                    {/* Security & Access */}
-                    <div className="bg-neo-base shadow-neo-card rounded-[16px] p-6 space-y-4">
-                      <h3 className="text-sm font-bold uppercase tracking-wider text-neo-primary border-b border-gray-300 dark:border-gray-800 pb-2">Security & Access</h3>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-xs font-bold text-neo-primary">Enforce Two-Factor Authentication (2FA)</p>
-                            <p className="text-[10px] text-neo-muted">Require all administrator and manager accounts to use 2FA.</p>
-                          </div>
-                          <div className="w-10 h-6 bg-neo-base shadow-neo-input rounded-full p-1 cursor-pointer flex items-center justify-start">
-                            <div className="w-4 h-4 rounded-full bg-neo-accent shadow-neo-btn"></div>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-xs font-bold text-neo-primary">Single Sign-On (SSO)</p>
-                            <p className="text-[10px] text-neo-muted">Enable SAML 2.0 or Okta identity provider authentication.</p>
-                          </div>
-                          <div className="w-10 h-6 bg-neo-base shadow-neo-input rounded-full p-1 cursor-pointer flex items-center justify-end">
-                            <div className="w-4 h-4 rounded-full bg-neo-accent shadow-neo-btn"></div>
-                          </div>
-                        </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-neo-secondary mb-1">IP Allowlist Range</label>
-                          <input type="text" className="w-full bg-neo-base shadow-neo-input border-0 rounded-[12px] h-[38px] px-3 text-xs text-neo-primary focus:shadow-neo-input-focus outline-none" defaultValue="192.168.1.1/24, 10.0.0.1/16" />
-                        </div>
-                      </div>
-                    </div>
+              {/* ROUTE: BILLS */}
+              {activePage === 'bills' && (
+                <BillsView
+                  vendors={db.vendors}
+                  isDark={theme === 'dark'}
+                />
+              )}
 
-                    {/* Integrations */}
-                    <div className="bg-neo-base shadow-neo-card rounded-[16px] p-6 space-y-4 md:col-span-2">
-                      <h3 className="text-sm font-bold uppercase tracking-wider text-neo-primary border-b border-gray-300 dark:border-gray-800 pb-2">ERP & Workflow Integrations</h3>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {[
-                          { name: 'SAP Integration', status: 'Connected', desc: 'Sync POs & Invoices' },
-                          { name: 'Oracle ERP', status: 'Disconnected', desc: 'Sync vendor registries' },
-                          { name: 'QuickBooks Online', status: 'Connected', desc: 'Sync ledger details' },
-                          { name: 'DocuSign', status: 'Connected', desc: 'E-sign contracts' }
-                        ].map((erp, idx) => (
-                          <div key={idx} className="bg-neo-base shadow-neo-card p-4 rounded-[14px] flex flex-col justify-between h-32">
-                            <div>
-                              <p className="text-xs font-bold text-neo-primary">{erp.name}</p>
-                              <p className="text-[10px] text-neo-muted mt-1">{erp.desc}</p>
-                            </div>
-                            <div className="flex items-center justify-between mt-4">
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded shadow-neo-badge ${erp.status === 'Connected' ? 'text-neo-success' : 'text-neo-muted'}`}>{erp.status}</span>
-                              <button className="bg-neo-base shadow-neo-btn hover:shadow-neo-btn-hover active:shadow-neo-btn-active text-[10px] font-bold text-neo-accent px-2 py-1 rounded-[8px]">
-                                {erp.status === 'Connected' ? 'Disconnect' : 'Connect'}
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                  </div>
-                </div>
+              {/* ROUTE: BATCH PAYMENTS */}
+              {activePage === 'batchpayments' && (
+                <BatchPaymentsView
+                  vendors={db.vendors}
+                  isDark={theme === 'dark'}
+                />
               )}
 
               {/* Fallback Screen (Renders clean informational dashboard cards if matches pages) */}
-              {!['dashboard', 'calendar', 'vendors', 'compare', 'savings', 'esg', 'onboarding', 'performance', 'pos', 'rfq', 'contracts', 'invoices', 'payments', 'analytics', 'users', 'audit', 'settings', 'compliance', 'risk'].includes(activePage) && (
+              {!['dashboard', 'calendar', 'vendors', 'compare', 'savings', 'performance', 'pos', 'invoices', 'payments', 'analytics', 'audit', 'risk', 'items', 'purchasereceived', 'bills', 'batchpayments'].includes(activePage) && (
                 <div className="flex-1 p-8 overflow-y-auto space-y-6">
                   
                   <div className="bg-white dark:bg-[#161B27] p-8 rounded border border-gray-200 dark:border-gray-800 text-center shadow-sm">
-                    <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/40 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div className="w-16 h-16 bg-orange-50 dark:bg-orange-900/40 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
                       <LayoutDashboard size={32} />
                     </div>
                     <h2 className="font-roboto font-extrabold text-lg text-gray-800 dark:text-white capitalize">
@@ -1868,7 +1531,7 @@ export default function App() {
                           setActivePage('vendors');
                           addToast('Checking operational schema registries', 'info');
                         }}
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs p-2 px-4 rounded shadow"
+                        className="bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs p-2 px-4 rounded shadow"
                       >
                         Inspect Primary Registry
                       </button>
@@ -1891,7 +1554,7 @@ export default function App() {
           <div 
             key={t.id} 
             className={`p-4 rounded shadow-xl text-white font-bold text-xs flex items-center gap-2.5 animate-in slide-in-from-right pointer-events-auto ${
-              t.type === 'success' ? 'bg-green-600' : t.type === 'error' ? 'bg-red-650' : 'bg-blue-600'
+              t.type === 'success' ? 'bg-green-600' : t.type === 'error' ? 'bg-red-650' : 'bg-orange-600'
             }`}
           >
             {t.type === 'success' && <Check size={16} />}
@@ -1922,8 +1585,8 @@ export default function App() {
                   <span className="font-bold text-red-700 dark:text-red-400 block mb-0.5">Critical Risk Rating Alert</span>
                   <p className="text-gray-500">Cybersecurity audit failed for VND-1014. Action requested.</p>
                 </div>
-                <div className="p-3 bg-blue-50 dark:bg-blue-950/20 border-l-4 border-blue-500 rounded">
-                  <span className="font-bold text-blue-700 block mb-0.5">Contract SLA Due for signature</span>
+                <div className="p-3 bg-orange-50 dark:bg-orange-950/20 border-l-4 border-orange-500 rounded">
+                  <span className="font-bold text-orange-700 block mb-0.5">Contract SLA Due for signature</span>
                   <p className="text-gray-500">Apex Master SLA is pending executive sign-off.</p>
                 </div>
                 <div className="p-3 bg-gray-50 dark:bg-gray-800/20 rounded">
@@ -1992,12 +1655,6 @@ export default function App() {
                 ) : (
                   <div className="space-y-3">
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-1">Suggestions / Quick actions</p>
-                    <div 
-                      onClick={() => handleSpotlightExecute('onboard')}
-                      className="p-2 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded cursor-pointer text-xs font-bold text-blue-600 block pl-3"
-                    >
-                      → New Vendor Onboarding Multi-step Form
-                    </div>
                     <div 
                       onClick={() => handleSpotlightExecute('po')}
                       className="p-2 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded cursor-pointer text-xs font-bold text-green-600 block pl-3"
@@ -2073,314 +1730,7 @@ export default function App() {
         </div>
       )}
 
-      {/* DYNAMIC NEW ONBOARDING MULTISTEP MODAL DIALOG */}
-      {onboardFormOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-[#161B27] border border-gray-200 dark:border-gray-800 rounded-lg shadow-2xl max-w-xl w-full overflow-hidden">
-            <div className="bg-gray-50 dark:bg-[#1C2333] px-6 py-4 border-b border-gray-150 dark:border-gray-850 flex justify-between items-center">
-              <div>
-                <h3 className="font-roboto font-extrabold text-xs uppercase tracking-widest">
-                  Vendor Onboarding Pipeline Form
-                </h3>
-                <p className="text-[10px] text-gray-400">Step {onboardStep} of 3 evaluations</p>
-              </div>
-              <button onClick={() => {
-                setOnboardFormOpen(false);
-                setOnboardStep(1);
-                setOnboardSuccessState(false);
-              }} className="text-gray-400 hover:text-gray-650">
-                <X size={18} />
-              </button>
-            </div>
 
-            {onboardSuccessState ? (
-              <div className="p-12 text-center space-y-4">
-                <div className="w-16 h-16 bg-green-100 dark:bg-green-900/40 text-green-600 rounded-full flex items-center justify-center mx-auto">
-                  <Check size={32} />
-                </div>
-                <h3 className="font-roboto font-black text-lg text-gray-805 dark:text-white">Submission complete</h3>
-                <p className="text-gray-500 dark:text-gray-405 text-xs max-w-xs mx-auto">
-                  Onboarding ticket filed for executive manager review. Status will update inside directory within 3-5 days.
-                </p>
-                <button 
-                  onClick={() => {
-                    setOnboardFormOpen(false);
-                    setOnboardStep(1);
-                    setOnboardSuccessState(false);
-                  }}
-                  className="px-4 py-2 bg-[#111827] text-white font-bold text-xs rounded"
-                >
-                  Close Pipeline Form
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={handleOnboardingSubmit} className="p-6 space-y-4 text-xs font-sans">
-                {onboardStep === 1 && (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-gray-500 font-bold mb-1">Company Legal Partnership Name *</label>
-                      <input 
-                        type="text" 
-                        required
-                        value={onboardCompany}
-                        onChange={(e) => setOnboardCompany(e.target.value)}
-                        placeholder="e.g. Acme Logistics conglomerate"
-                        className="w-full bg-transparent border border-gray-300 dark:border-gray-700 rounded px-3 py-1.5 outline-none focus:border-blue-500"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-gray-500 font-bold mb-1">Vendor Category Specialty</label>
-                        <select 
-                          value={onboardCategory}
-                          onChange={(e) => setOnboardCategory(e.target.value as Vendor['category'])}
-                          className="w-full bg-transparent border border-gray-300 dark:border-gray-700 rounded px-2 py-1.5 outline-none"
-                        >
-                          <option>IT Services</option>
-                          <option>Logistics</option>
-                          <option>Raw Materials</option>
-                          <option>Consulting</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-gray-500 font-bold mb-1">Vetting Tier Assignment</label>
-                        <select 
-                          value={onboardTier}
-                          onChange={(e) => setOnboardTier(e.target.value as any)}
-                          className="w-full bg-transparent border border-gray-300 dark:border-gray-700 rounded px-2 py-1.5 outline-none"
-                        >
-                          <option>Tier 1</option>
-                          <option>Tier 2</option>
-                          <option>Tier 3</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div className="flex justify-end pt-4">
-                      <button 
-                        type="button" 
-                        onClick={() => setOnboardStep(2)}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded shadow"
-                      >
-                        Next Step →
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {onboardStep === 2 && (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-gray-500 font-bold mb-1">Contact Email *</label>
-                        <input 
-                          type="email" 
-                          required
-                          value={onboardEmail}
-                          onChange={(e) => setOnboardEmail(e.target.value)}
-                          placeholder="salesteam@conglomerate.com"
-                          className="w-full bg-transparent border border-gray-300 dark:border-gray-700 rounded px-3 py-1.5 outline-none focus:border-blue-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-gray-500 font-bold mb-1">Country of Registry</label>
-                        <input 
-                          type="text" 
-                          value={onboardCountry}
-                          onChange={(e) => setOnboardCountry(e.target.value)}
-                          className="w-full bg-transparent border border-gray-300 dark:border-gray-700 rounded px-3 py-1.5 outline-none"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-gray-500 font-bold mb-1">Headquarters City Origin</label>
-                      <input 
-                        type="text" 
-                        value={onboardCity}
-                        onChange={(e) => setOnboardCity(e.target.value)}
-                        placeholder="e.g. Munich, Germany"
-                        className="w-full bg-transparent border border-gray-300 dark:border-gray-700 rounded px-3 py-1.5 outline-none"
-                      />
-                    </div>
-                    <div className="flex justify-between pt-4">
-                      <button 
-                        type="button" 
-                        onClick={() => setOnboardStep(1)}
-                        className="px-4 py-2 border border-gray-300 rounded font-bold"
-                      >
-                        ← Back
-                      </button>
-                      <button 
-                        type="button" 
-                        onClick={() => setOnboardStep(3)}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded shadow"
-                      >
-                        Next Step →
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {onboardStep === 3 && (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-gray-500 font-bold mb-1">Requested Terms</label>
-                        <select 
-                          value={onboardTerms}
-                          onChange={(e) => setOnboardTerms(e.target.value)}
-                          className="w-full bg-transparent border border-gray-300 dark:border-gray-700 rounded px-2 py-1.5 outline-none"
-                        >
-                          <option>Net 15</option>
-                          <option>Net 30</option>
-                          <option>Net 60</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-gray-500 font-bold mb-1">Credit Limit Requested ($)</label>
-                        <input 
-                          type="number" 
-                          value={onboardCredit}
-                          onChange={(e) => setOnboardCredit(parseFloat(e.target.value) || 0)}
-                          className="w-full bg-transparent border border-gray-300 dark:border-gray-700 rounded px-3 py-1.5 outline-none"
-                        />
-                      </div>
-                    </div>
-                    <div className="p-3 bg-blue-50/50 rounded border border-blue-100 flex items-center gap-2">
-                      <Info size={14} className="text-blue-600" />
-                      <span>Completing files compliance check and authorization triggers automatically.</span>
-                    </div>
-                    <div className="flex justify-between pt-4">
-                      <button 
-                        type="button" 
-                        onClick={() => setOnboardStep(2)}
-                        className="px-4 py-2 border border-gray-300 rounded font-bold"
-                      >
-                        ← Back
-                      </button>
-                      <button 
-                        type="submit" 
-                        className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded shadow"
-                      >
-                        Submit Pipeline Request
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </form>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* PO MULTILINE EDIT FORM CREATOR MODAL */}
-      {poFormOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-[#161B27] border border-gray-200 dark:border-gray-850 rounded-lg shadow-2xl max-w-xl w-full overflow-hidden">
-            <div className="bg-gray-50 dark:bg-[#1C2333] px-6 py-4 border-b border-gray-150 dark:border-gray-800 flex justify-between items-center">
-              <h3 className="font-roboto font-extrabold text-xs uppercase tracking-widest">
-                Create Purchase Order Line Draft
-              </h3>
-              <button onClick={() => setPOFormOpen(false)} className="text-gray-400 hover:text-gray-600">
-                <X size={18} />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreatePO} className="p-6 space-y-4 text-xs font-sans">
-              <div>
-                <label className="block text-gray-500 font-bold mb-1">Target Vendor Supplier Partner *</label>
-                <select 
-                  required
-                  value={newPoVendorId}
-                  onChange={(e) => setNewPoVendorId(e.target.value)}
-                  className="w-full bg-transparent border border-gray-300 dark:border-gray-700 rounded px-2 py-1.5 outline-none focus:border-green-500"
-                >
-                  <option value="">Choose Supplier...</option>
-                  {db.vendors.map(v => (
-                    <option key={v.id} value={v.id}>{v.name} ({v.id})</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Editable Multi line table items fields */}
-              <div>
-                <span className="block text-gray-400 font-bold uppercase text-[9px] mb-2 tracking-widest">Purchase Line Item Details</span>
-                {newPoItems.map((itm, idx) => (
-                  <div key={idx} className="grid grid-cols-4 gap-3 items-center mb-2">
-                    <input 
-                      type="text" 
-                      placeholder="Code (e.g. PRD-102)"
-                      value={itm.code}
-                      onChange={(e) => {
-                        const next = [...newPoItems];
-                        next[idx].code = e.target.value;
-                        setNewPoItems(next);
-                      }}
-                      className="bg-transparent border border-gray-300 rounded px-2"
-                    />
-                    <input 
-                      type="text" 
-                      placeholder="Description details"
-                      value={itm.desc}
-                      onChange={(e) => {
-                        const next = [...newPoItems];
-                        next[idx].desc = e.target.value;
-                        setNewPoItems(next);
-                      }}
-                      className="bg-transparent border border-gray-300 rounded px-2"
-                    />
-                    <input 
-                      type="number" 
-                      placeholder="Quantity"
-                      value={itm.qty}
-                      onChange={(e) => {
-                        const next = [...newPoItems];
-                        next[idx].qty = parseInt(e.target.value) || 0;
-                        setNewPoItems(next);
-                      }}
-                      className="bg-transparent border border-gray-300 rounded px-2"
-                    />
-                    <input 
-                      type="number" 
-                      placeholder="Unit cost ($)"
-                      value={itm.price}
-                      onChange={(e) => {
-                        const next = [...newPoItems];
-                        next[idx].price = parseFloat(e.target.value) || 0;
-                        setNewPoItems(next);
-                      }}
-                      className="bg-transparent border border-gray-300 rounded px-2"
-                    />
-                  </div>
-                ))}
-
-                <button 
-                  type="button"
-                  onClick={() => setNewPoItems(prev => [...prev, { code: 'PRD-100', desc: 'Hardware extra Consolidation pack', qty: 1, price: 100 }])}
-                  className="text-blue-600 hover:underline font-bold mt-2 inline-block"
-                >
-                  + Add Line Item Field Row
-                </button>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-150">
-                <button 
-                  type="button" 
-                  onClick={() => setPOFormOpen(false)}
-                  className="px-4 py-2 border border-gray-300 rounded font-bold"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit" 
-                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded shadow"
-                >
-                  Seal PO line
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
     </div>
   );

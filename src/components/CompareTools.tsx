@@ -162,7 +162,7 @@ export function CompareTools({
             return (
               <div
                 key={slotIdx}
-                className="relative border-2 border-dashed border-slate-300 dark:border-slate-800 rounded-lg p-6 min-h-[160px] flex flex-col items-center justify-center text-center hover:border-blue-500 dark:hover:border-blue-600 transition cursor-pointer"
+                className="relative border-2 border-dashed border-slate-300 dark:border-slate-800 rounded-lg p-6 min-h-[160px] flex flex-col items-center justify-center text-center hover:border-orange-500 dark:hover:border-orange-600 transition cursor-pointer"
                 onClick={() => setActiveDropdownSlot(activeDropdownSlot === slotIdx ? null : slotIdx)}
               >
                 <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 mb-2">
@@ -184,7 +184,7 @@ export function CompareTools({
                         placeholder="Search vendors..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2.5 py-1.5 outline-none focus:border-blue-600 text-slate-800 dark:text-white"
+                        className="w-full text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2.5 py-1.5 outline-none focus:border-orange-600 text-slate-800 dark:text-white"
                       />
                     </div>
                     
@@ -242,7 +242,7 @@ export function CompareTools({
               <p className="text-[10px] text-slate-400 font-semibold uppercase">{v.id}</p>
 
               <div className="flex gap-1.5 mt-3">
-                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900 rounded">
+                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-900 rounded">
                   {v.category}
                 </span>
                 <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-350 rounded">
@@ -265,7 +265,7 @@ export function CompareTools({
           <div className="flex gap-4 justify-center">
             <button
               onClick={() => handleSelectVendor('VND-0040', 0)}
-              className="text-xs bg-blue-600 hover:bg-blue-700 text-white rounded font-bold px-4 py-2 uppercase"
+              className="text-xs bg-orange-600 hover:bg-orange-700 text-white rounded font-bold px-4 py-2 uppercase"
             >
               Load Demo Vendors
             </button>
@@ -528,7 +528,7 @@ export function CompareTools({
                     <td key={idx} className="p-4 bg-white dark:bg-slate-900 space-y-2">
                       <button
                         onClick={() => onNavigateToDetail(v.id)}
-                        className="w-full flex items-center justify-center gap-1 py-1.5 text-[10px] font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 border border-blue-600/20 hover:bg-blue-50 dark:hover:bg-blue-950/20 rounded cursor-pointer"
+                        className="w-full flex items-center justify-center gap-1 py-1.5 text-[10px] font-black uppercase tracking-wider text-orange-600 dark:text-orange-400 border border-orange-600/20 hover:bg-orange-50 dark:hover:bg-orange-950/20 rounded cursor-pointer"
                       >
                         <Eye size={12} /> View Profile
                       </button>

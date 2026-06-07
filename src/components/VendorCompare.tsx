@@ -117,7 +117,7 @@ export const VendorCompare: React.FC<VendorCompareProps> = ({
     ];
   }, [comparedVendors]);
 
-  const VENDOR_CHART_COLORS = ['#2563EB', '#16A34A', '#7C3AED', '#0891B2'];
+  const VENDOR_CHART_COLORS = ['#ea580c', '#16A34A', '#7C3AED', '#0891B2'];
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#F4F5F7] dark:bg-[#0D1117] text-[#111827] dark:text-[#F1F5F9] overflow-y-auto transition-colors duration-200">
@@ -126,7 +126,7 @@ export const VendorCompare: React.FC<VendorCompareProps> = ({
       <div className="px-8 py-6 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111827] flex justify-between items-center flex-wrap gap-4">
         <div>
           <h1 className="font-roboto font-extrabold text-2xl tracking-tight text-gray-900 dark:text-white flex items-center gap-2">
-            <GitCompare className="text-blue-500" /> Vendor Comparison Engine
+            <GitCompare className="text-orange-500" /> Vendor Comparison Engine
           </h1>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             Analyze up to 4 registered vendors side by side across performance, risk indices, financials, and ESG ratings.
@@ -143,7 +143,7 @@ export const VendorCompare: React.FC<VendorCompareProps> = ({
             </button>
             <button 
               onClick={() => window.print()}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2 rounded shadow"
+              className="bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs px-4 py-2 rounded shadow"
             >
               Export Report
             </button>
@@ -169,7 +169,7 @@ export const VendorCompare: React.FC<VendorCompareProps> = ({
                   </button>
                   
                   {/* Avatar */}
-                  <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-bold flex items-center justify-center text-base mb-2">
+                  <div className="w-12 h-12 rounded-full bg-orange-50 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400 font-bold flex items-center justify-center text-base mb-2">
                     {vendor.name.charAt(0)}
                   </div>
                   
@@ -183,7 +183,7 @@ export const VendorCompare: React.FC<VendorCompareProps> = ({
                       {vendor.id}
                     </span>
                     <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                      vendor.tier === 'Tier 1' ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700' : 'bg-green-100 dark:bg-green-900/40 text-green-700'
+                      vendor.tier === 'Tier 1' ? 'bg-orange-100 dark:bg-orange-900/40 text-orange-700' : 'bg-green-100 dark:bg-green-900/40 text-green-700'
                     }`}>
                       {vendor.tier}
                     </span>
@@ -201,7 +201,7 @@ export const VendorCompare: React.FC<VendorCompareProps> = ({
               >
                 <button 
                   onClick={() => setDropdownOpenSlot(dropdownOpen ? null : slotIdx)}
-                  className="p-2 border border-gray-300 dark:border-gray-750 rounded-full hover:bg-gray-100 dark:hover:bg-gray-850 text-gray-400 hover:text-blue-500 transition mb-2"
+                  className="p-2 border border-gray-300 dark:border-gray-750 rounded-full hover:bg-gray-100 dark:hover:bg-gray-850 text-gray-400 hover:text-orange-500 transition mb-2"
                 >
                   <Plus size={18} />
                 </button>
@@ -218,7 +218,7 @@ export const VendorCompare: React.FC<VendorCompareProps> = ({
                         value={searchVal}
                         onChange={(e) => setSearchVal(e.target.value)}
                         placeholder="Search system registry..."
-                        className="w-full bg-transparent border border-gray-200 dark:border-gray-800 pl-8 pr-2.5 py-1 text-xs outline-none focus:border-blue-500 rounded"
+                        className="w-full bg-transparent border border-gray-200 dark:border-gray-800 pl-8 pr-2.5 py-1 text-xs outline-none focus:border-orange-500 rounded"
                         autoFocus
                       />
                     </div>
@@ -239,7 +239,7 @@ export const VendorCompare: React.FC<VendorCompareProps> = ({
                               <p className="font-bold text-gray-800 dark:text-gray-200">{v.name}</p>
                               <span className="text-[10px] text-gray-400">{v.id} • {v.category}</span>
                             </div>
-                            <span className="text-[9px] bg-blue-50 dark:bg-blue-900/40 text-blue-600 px-1 rounded font-bold">{v.tier}</span>
+                            <span className="text-[9px] bg-orange-50 dark:bg-orange-900/40 text-orange-600 px-1 rounded font-bold">{v.tier}</span>
                           </div>
                         ))
                       ) : (
@@ -428,7 +428,7 @@ export const VendorCompare: React.FC<VendorCompareProps> = ({
                   <div key={v.id} className="text-center flex justify-center gap-2">
                     <button 
                       onClick={() => onNavigateToPage('vendors', v.id)}
-                      className="text-[10px] text-blue-600 hover:underline font-bold"
+                      className="text-[10px] text-orange-600 hover:underline font-bold"
                     >
                       View Profile
                     </button>
@@ -514,7 +514,7 @@ export const VendorCompare: React.FC<VendorCompareProps> = ({
         ) : (
           /* Empty State */
           <div className="bg-white dark:bg-[#161B27] rounded-lg border border-gray-200 dark:border-gray-800 p-16 text-center shadow-sm">
-            <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/40 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-orange-50 dark:bg-orange-900/40 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <GitCompare size={32} />
             </div>
             <h2 className="font-roboto font-extrabold text-[#111827] dark:text-white text-lg tracking-tight mb-2">
@@ -525,7 +525,7 @@ export const VendorCompare: React.FC<VendorCompareProps> = ({
             </p>
             <button 
               onClick={() => onNavigateToPage('vendors')}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-5 py-2.5 rounded shadow inline-flex items-center gap-2 transition"
+              className="bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs px-5 py-2.5 rounded shadow inline-flex items-center gap-2 transition"
             >
               Go to Vendor Directory <ArrowRight size={14} />
             </button>
