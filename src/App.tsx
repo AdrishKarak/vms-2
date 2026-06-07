@@ -26,6 +26,7 @@ import {
 import { CalendarView } from './components/CalendarView';
 import { VendorCompare } from './components/VendorCompare';
 import { SavingsTracker } from './components/SavingsTracker';
+import { AddVendorView } from './components/AddVendorView';
 import { Performance } from './components/Performance';
 import { Procurement } from './components/Procurement';
 import { FinanceAndAdmin } from './components/FinanceAndAdmin';
@@ -109,7 +110,7 @@ function CountUp({ end, duration = 1500, prefix = '', suffix = '', decimals = 0 
 export default function App() {
   // Master state synchronized across views
   const [db, setDb] = useState(() => generateInitialMockData());
-  const [activePage, setActivePage] = useState<'dashboard' | 'vendors' | 'performance' | 'pos' | 'invoices' | 'risk' | 'payments' | 'analytics' | 'compare' | 'savings' | 'calendar' | 'audit' | 'items' | 'purchasereceived' | 'bills' | 'batchpayments'>('dashboard');
+  const [activePage, setActivePage] = useState<'dashboard' | 'vendors' | 'performance' | 'pos' | 'invoices' | 'risk' | 'payments' | 'analytics' | 'compare' | 'savings' | 'calendar' | 'audit' | 'items' | 'purchasereceived' | 'bills' | 'batchpayments' | 'addvendor'>('dashboard');
   
   // Theme state
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -545,6 +546,7 @@ export default function App() {
       group: 'VENDORS',
       items: [
         { name: 'Vendor Directory', icon: Building2, page: 'vendors' as const },
+        { name: 'Add Vendor', icon: UserPlus, page: 'addvendor' as const },
         { name: 'Compare Vendors', icon: GitCompare, page: 'compare' as const },
         { name: 'Performance Score', icon: BarChart3, page: 'performance' as const },
       ]
@@ -1333,6 +1335,13 @@ export default function App() {
                       </button>
                     </div>
 
+                    <button
+                      onClick={() => setActivePage('addvendor')}
+                      className="flex items-center gap-1.5 px-3.5 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded text-xs font-bold shadow-md shadow-orange-600/10 transition font-roboto"
+                    >
+                      <UserPlus size={14} />
+                      Onboard New Vendor
+                    </button>
                   </div>
 
                   {/* Standard Main Directory Listing */}
@@ -1391,6 +1400,16 @@ export default function App() {
                   </div>
 
                 </div>
+              )}
+
+              {/* ROUTE: ADD VENDOR */}
+              {activePage === 'addvendor' && (
+                <AddVendorView 
+                  vendors={db.vendors}
+                  onAddVendor={handleAddVendor}
+                  onNavigateToPage={setActivePage}
+                  dark={theme === 'dark'}
+                />
               )}
 
               {/* ROUTE: COMPARE VENDORS */}
@@ -1511,7 +1530,7 @@ export default function App() {
               )}
 
               {/* Fallback Screen (Renders clean informational dashboard cards if matches pages) */}
-              {!['dashboard', 'calendar', 'vendors', 'compare', 'savings', 'performance', 'pos', 'invoices', 'payments', 'analytics', 'audit', 'risk', 'items', 'purchasereceived', 'bills', 'batchpayments'].includes(activePage) && (
+              {!['dashboard', 'calendar', 'vendors', 'compare', 'savings', 'performance', 'pos', 'invoices', 'payments', 'analytics', 'audit', 'risk', 'items', 'purchasereceived', 'bills', 'batchpayments', 'addvendor'].includes(activePage) && (
                 <div className="flex-1 p-8 overflow-y-auto space-y-6">
                   
                   <div className="bg-white dark:bg-[#161B27] p-8 rounded border border-gray-200 dark:border-gray-800 text-center shadow-sm">

@@ -29,6 +29,15 @@ export interface Vendor {
   swift: string;
   currency: string;
   creditLimit: number;
+  symbol?: string;
+  registrationNumber?: string;
+  dealsWith?: string;
+  type?: string;
+  countryOfRegistration?: string;
+  startingDate?: string;
+  rating?: number;
+  amount?: number;
+  mobileNo?: string;
   primaryContact: {
     firstName: string;
     lastName: string;
